@@ -1,5 +1,5 @@
 <package>
-  <name>control_ctv</name>
+  <name>control_cctv</name>
   <version>1.0.0</version>
   <description>control cctv</description>
   <maintainer email="adw106@gmail.com">Aaron Weinstein</maintainer>
@@ -26,6 +26,7 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>quadrotor_msgs</build_depend>
   <build_depend>cable_vision_msgs</build_depend>
+  <build_depend>msgs_cctv</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>roscpp</run_depend>
@@ -33,6 +34,7 @@
   <run_depend>nav_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>quadrotor_msgs</run_depend>
+  <run_depend>msgs_cctv</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>cable_vision_msgs</run_depend>
   <run_depend>tf</run_depend>

@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 	nav_msgs
 	quadrotor_msgs
    geometry_msgs
+   msgs_cctv
 	std_msgs
    message_generation
 	tf

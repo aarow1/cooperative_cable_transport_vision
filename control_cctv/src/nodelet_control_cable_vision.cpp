@@ -3,7 +3,7 @@
 #include <nav_msgs/Odometry.h>
 #include <quadrotor_msgs/SO3Command.h>
 #include <quadrotor_msgs/PositionCommand.h>
-#include <cable_vision_msgs/PayloadCommand.h>
+#include <msgs_cctv/PayloadCommand.h>
 #include <quadrotor_msgs/Corrections.h>
 #include <std_msgs/Bool.h>
 #include <Eigen/Geometry>
@@ -34,7 +34,7 @@ class ControlCableVisionNodelet : public nodelet::Nodelet
 
  private:
   void publishSO3Command(); // Still publish so3commands to attitude controller
-  void payload_position_cmd_callback(const cable_vision_msgs::PayloadCommandConstPtr &cmd);
+  void payload_position_cmd_callback(const msgs_cctv::PayloadCommandConstPtr &cmd);
   void odom_callback(const nav_msgs::Odometry::ConstPtr &odom);
   void enable_motors_callback(const std_msgs::Bool::ConstPtr &msg);
   void corrections_callback(const quadrotor_msgs::Corrections::ConstPtr &msg);
@@ -123,7 +123,7 @@ void ControlCableVisionNodelet::publishSO3Command()
   so3_command_pub_.publish(so3_command);
 }
 
-void ControlCableVisionNodelet::payload_position_cmd_callback(const control_cable_vision::PayloadCommandConstPtr &cmd)
+void ControlCableVisionNodelet::payload_position_cmd_callback(const msgs_cctv::PayloadCommandConstPtr &cmd)
 {
   des_pos_0_ = Eigen::Vector3d( cmd->payload_position.x,
                                 cmd->payload_position.y,

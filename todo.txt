@@ -2,7 +2,6 @@ Last updated Monday 5/15
 
 Todo ================================
 
-[ ] Move all payload messages to new package
 [ ] Make PayloadOdom message
 [ ] Create payload odom callback in nodelet
 [ ] Replace Corrections message (?)
@@ -14,8 +13,15 @@ Todo ================================
     |-- make payload just a feedforward path to see how control responds
     |-- viz cable directions and desired directions (may not be necessary)
 [ ] Change gains to be vectors in ControlCableVision/calculatecontrol function
+    # probably don't want to do this. actually all these gains should be scalars
+[ ] make simple payload position and orientation publisher
+      - use pose stamped for rviz to keep that part easy
+      - lissajous (both x and y are sin, a/b = 2)
+      - do some random thing for orientation of the payload, but make it simple
+        enough to publish angular vel and acc
 
 Done ================================
 
 [x] Make PayloadPositionCommand message
 [x] add payload position command callback to nodelet
+[x] Move all payload messages to new package
