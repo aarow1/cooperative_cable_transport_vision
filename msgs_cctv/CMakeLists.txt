@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(cable_vision_msgs)
+project(msgs_cctv)
 
 add_compile_options(-std=c++11)
 

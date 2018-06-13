@@ -1,5 +1,5 @@
 <package format="2">
-  <name>cable_vision_msgs</name>
+  <name>msgs_cctv</name>
   <version>1.0.0</version>
   <description>payload messages</description>
   <maintainer email="aarow@seas.upenn.edu">Aaron Weinstein</maintainer>

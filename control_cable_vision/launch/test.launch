@@ -1,8 +1,0 @@
-﻿<launch>
-  <node pkg="control_cable_vision"
-    type="ControlCableVision"
-	 name="controller"
-	 output="screen">
-	 <rosparam file="$(find control_cable_vision)/config/cable_vision_params.yaml"/>
-  </node>
-</launch>
