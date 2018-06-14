@@ -7,13 +7,13 @@
 #include <quadrotor_msgs/Corrections.h>
 #include <std_msgs/Bool.h>
 #include <Eigen/Geometry>
-#include <control_cable_vision/ControlCableVision.h>
+#include <control_cctv/ControlCCTV.h>
 #include <tf/transform_datatypes.h>
 
-class ControlCableVisionNodelet : public nodelet::Nodelet
+class ControlCCTVNodelet : public nodelet::Nodelet
 {
  public:
-  ControlCableVisionNodelet() :
+  ControlCCTVNodelet() :
       position_cmd_updated_(false),
       position_cmd_init_(false),
       des_yaw_i_(0),
