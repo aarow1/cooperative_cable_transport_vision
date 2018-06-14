@@ -3,7 +3,7 @@
 
 #define DEBUG 1
 
-ControlCableVision::ControlCableVision()
+ControlCCTV::ControlCCTV()
   : m_0_(0.5),
     g_(9.81),
     n_bots_(3),
@@ -26,22 +26,22 @@ ControlCableVision::ControlCableVision()
 }
 
 // System Setters
-void ControlCableVision::set_m_0    (const double m_0){
+void ControlCCTV::set_m_0    (const double m_0){
   m_0_ = m_0;
 }
-void ControlCableVision::set_J_0    (const Eigen::Matrix3d J_0){
+void ControlCCTV::set_J_0    (const Eigen::Matrix3d J_0){
   J_0_ = J_0;
 }
-void ControlCableVision::set_m_i    (const double m_i){
+void ControlCCTV::set_m_i    (const double m_i){
   m_i_ = m_i;
 }
-void ControlCableVision::set_J_i    (const Eigen::Matrix3d J_i){
+void ControlCCTV::set_J_i    (const Eigen::Matrix3d J_i){
   J_i_ = J_i;
 }
-void ControlCableVision::set_l_i    (const double l_i){
+void ControlCCTV::set_l_i    (const double l_i){
   l_i_ = l_i;
 }
-void ControlCableVision::set_rho    (const Eigen::Matrix<double, 3, 3> rho){
+void ControlCCTV::set_rho    (const Eigen::Matrix<double, 3, 3> rho){
   rho_ = rho;
 
   // add attachments to control matrix P
@@ -56,47 +56,47 @@ void ControlCableVision::set_rho    (const Eigen::Matrix<double, 3, 3> rho){
   ROS_ERROR_COND(lu.rank() < P_.rows(), "P is not full rank");
   pseudo_P_ = P_.transpose() * (P_*P_.transpose()).inverse();
 }
-void ControlCableVision::set_g      (const double g){
+void ControlCCTV::set_g      (const double g){
   g_ = g;
 }
-void ControlCableVision::set_idx    (const int idx){
+void ControlCCTV::set_idx    (const int idx){
   idx_ = idx;
 }
-void ControlCableVision::set_n_bots (const int n_bots){
+void ControlCCTV::set_n_bots (const int n_bots){
   n_bots_ = n_bots;
 }
 
 // State Setters
-void ControlCableVision::set_pos_0  (const Eigen::Vector3d &pos_0){
+void ControlCCTV::set_pos_0  (const Eigen::Vector3d &pos_0){
   pos_0_ = pos_0;
 }
-void ControlCableVision::set_vel_0  (const Eigen::Vector3d &vel_0){
+void ControlCCTV::set_vel_0  (const Eigen::Vector3d &vel_0){
   vel_0_ = vel_0;
 }
-void ControlCableVision::set_R_0    (const Eigen::Matrix3d &R_0){
+void ControlCCTV::set_R_0    (const Eigen::Matrix3d &R_0){
   R_0_ = R_0;
 }
-void ControlCableVision::set_Omega_0(const Eigen::Vector3d &Omega_0){
+void ControlCCTV::set_Omega_0(const Eigen::Vector3d &Omega_0){
   Omega_0_ = Omega_0;
 }
-void ControlCableVision::set_R_i    (const Eigen::Matrix3d &R_i){
+void ControlCCTV::set_R_i    (const Eigen::Matrix3d &R_i){
   R_i_ = R_i;
 }
-void ControlCableVision::set_Omega_i(const Eigen::Vector3d &Omega_i){
+void ControlCCTV::set_Omega_i(const Eigen::Vector3d &Omega_i){
   Omega_i_ = Omega_i;
 }
-void ControlCableVision::set_q_i    (const Eigen::Vector3d &q_i){
+void ControlCCTV::set_q_i    (const Eigen::Vector3d &q_i){
   q_i_ = q_i;
 }
-void ControlCableVision::set_q_i_dot(const Eigen::Vector3d &q_i_dot){
+void ControlCCTV::set_q_i_dot(const Eigen::Vector3d &q_i_dot){
   q_i_dot_ = q_i_dot;
 }
-void ControlCableVision::set_w_i    (const Eigen::Vector3d &w_i){
+void ControlCCTV::set_w_i    (const Eigen::Vector3d &w_i){
   w_i_ = w_i;
 }
 
 
-void ControlCableVision::calculateControl(const Eigen::Vector3d &des_pos_0,
+void ControlCCTV::calculateControl(const Eigen::Vector3d &des_pos_0,
                       const Eigen::Vector3d &des_vel_0,
                       const Eigen::Vector3d &des_acc_0,
                       const Eigen::Matrix3d &des_R_0,
@@ -234,12 +234,12 @@ void ControlCableVision::calculateControl(const Eigen::Vector3d &des_pos_0,
   angular_velocity_ = Omega_1_1;
 }
 
-const Eigen::Vector3d     &ControlCableVision::getComputedForce(){
+const Eigen::Vector3d     &ControlCCTV::getComputedForce(){
   return force_;
 }
-const Eigen::Quaterniond  &ControlCableVision::getComputedOrientation(){
+const Eigen::Quaterniond  &ControlCCTV::getComputedOrientation(){
   return orientation_;
 }
-const Eigen::Vector3d     &ControlCableVision::getComputedAngularVelocity(){
+const Eigen::Vector3d     &ControlCCTV::getComputedAngularVelocity(){
   return angular_velocity_;
 }
