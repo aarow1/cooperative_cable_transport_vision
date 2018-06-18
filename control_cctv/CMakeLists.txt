@@ -51,12 +51,12 @@ catkin_package(
   DEPENDS Eigen)
 
 set(SOURCE_FILES
-	   src/ControlCableVision.cpp
+      src/ControlCCTV.cpp
       src/vio_utils.cpp
 )
 
 set(HEADER_FILES
-   include/control_cable_vision/ControlCableVision.h
+   include/control_cable_vision/ControlCCTV.h
    include/control_cable_vision/vio_utils.h
 )
 
