@@ -1,0 +1,27 @@
+<launch>
+
+<arg name="start_nodelet_manager" default="true"/>
+<arg name="nodelet_manager_name" default="nodelet_manager_control"/>
+
+<!--nodelet manager-->
+<node pkg="nodelet"
+  type="nodelet"
+  name="$(arg nodelet_manager_name)"
+  args="manager"
+  output="screen"
+  if="$(arg start_nodelet_manager)"/>
+
+<node pkg="nodelet"
+  type="nodelet"
+  args="load control_cctv/NodeletControlCCTV $(arg nodelet_manager_name)"
+  name="control_cctv"
+  required="true"
+  output="screen">
+  <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
+<!--  <param name="mass" value="$(arg mass)"/>
+  <remap from="~odom" to="odom"/>
+  <remap from="~position_cmd" to="position_cmd"/>
+  <remap from="~so3_cmd" to="so3_cmd"/>
+  <remap from="~motors" to="motors"/>-->
+</node>
+</launch>

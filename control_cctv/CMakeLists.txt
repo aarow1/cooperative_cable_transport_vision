@@ -56,16 +56,16 @@ set(SOURCE_FILES
 )
 
 set(HEADER_FILES
-   include/control_cable_vision/ControlCCTV.h
-   include/control_cable_vision/vio_utils.h
+   include/control_cctv/ControlCCTV.h
+   include/control_cctv/vio_utils.h
 )
 
-add_library(control_cable_vision_lib ${SOURCE_FILES})
-target_link_libraries(control_cable_vision_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
+add_library(control_cctv_lib ${SOURCE_FILES})
+target_link_libraries(control_cctv_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
 
-add_library(nodelet_control_cable_vision src/nodelet_control_cable_vision.cpp)
-add_dependencies(nodelet_control_cable_vision ${catkin_EXPORTED_TARGETS})
-target_link_libraries(nodelet_control_cable_vision control_cable_vision_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
+add_library(nodelet_control_cctv src/NodeletControlCCTV.cpp)
+add_dependencies(nodelet_control_cctv ${catkin_EXPORTED_TARGETS})
+target_link_libraries(nodelet_control_cctv control_cctv_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
 
 
 #add_executable(ControlCableVision src/ControlCableVision.cpp)

@@ -243,3 +243,4 @@ const Eigen::Quaterniond  &ControlCableVision::getComputedOrientation(){
 const Eigen::Vector3d     &ControlCableVision::getComputedAngularVelocity(){
   return angular_velocity_;
 }
+size
