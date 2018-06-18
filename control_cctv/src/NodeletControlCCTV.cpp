@@ -39,7 +39,7 @@ class ControlCCTVNodelet : public nodelet::Nodelet
   void enable_motors_callback(const std_msgs::Bool::ConstPtr &msg);
   void corrections_callback(const quadrotor_msgs::Corrections::ConstPtr &msg);
 
-  ControlCableVision controller_;
+  ControlCCTV controller_;
   ros::Publisher so3_command_pub_;
   ros::Subscriber odom_sub_, position_cmd_sub_, enable_motors_sub_, corrections_sub_;
 
@@ -62,7 +62,7 @@ class ControlCCTVNodelet : public nodelet::Nodelet
 };
 
 
-void ControlCableVisionNodelet::publishSO3Command()
+void ControlCCTVNodelet::publishSO3Command()
 {
   if (!have_odom_)
   {
@@ -123,7 +123,7 @@ void ControlCableVisionNodelet::publishSO3Command()
   so3_command_pub_.publish(so3_command);
 }
 
-void ControlCableVisionNodelet::payload_position_cmd_callback(const msgs_cctv::PayloadCommandConstPtr &cmd)
+void ControlCCTVNodelet::payload_position_cmd_callback(const msgs_cctv::PayloadCommandConstPtr &cmd)
 {
   des_pos_0_ = Eigen::Vector3d( cmd->payload_position.x,
                                 cmd->payload_position.y,
@@ -154,7 +154,7 @@ void ControlCableVisionNodelet::payload_position_cmd_callback(const msgs_cctv::P
   publishSO3Command();
 }
 
-void ControlCableVisionNodelet::odom_callback(const nav_msgs::Odometry::ConstPtr &odom)
+void ControlCCTVNodelet::odom_callback(const nav_msgs::Odometry::ConstPtr &odom)
 {
   have_odom_ = true;
 
@@ -187,7 +187,7 @@ void ControlCableVisionNodelet::odom_callback(const nav_msgs::Odometry::ConstPtr
   }
 }
 
-void ControlCableVisionNodelet::enable_motors_callback(const std_msgs::Bool::ConstPtr &msg)
+void ControlCCTVNodelet::enable_motors_callback(const std_msgs::Bool::ConstPtr &msg)
 {
   if(msg->data)
     ROS_INFO("Enabling motors");
@@ -199,14 +199,14 @@ void ControlCableVisionNodelet::enable_motors_callback(const std_msgs::Bool::Con
 //  controller_.resetIntegrals();
 }
 
-void ControlCableVisionNodelet::corrections_callback(const quadrotor_msgs::Corrections::ConstPtr &msg)
+void ControlCCTVNodelet::corrections_callback(const quadrotor_msgs::Corrections::ConstPtr &msg)
 {
   corrections_[0] = msg->kf_correction;
   corrections_[1] = msg->angle_corrections[0];
   corrections_[2] = msg->angle_corrections[1];
 }
 
-void ControlCableVisionNodelet::onInit()
+void ControlCCTVNodelet::onInit()
 {
   ros::NodeHandle n(getPrivateNodeHandle());
 
@@ -251,14 +251,14 @@ void ControlCableVisionNodelet::onInit()
 
   so3_command_pub_ = n.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
 
-  odom_sub_ = n.subscribe("odom", 10, &ControlCableVisionNodelet::odom_callback, this, ros::TransportHints().tcpNoDelay());
-//  position_cmd_sub_ = n.subscribe("position_cmd", 10, &ControlCableVisionNodelet::position_cmd_callback, this,
+  odom_sub_ = n.subscribe("odom", 10, &ControlCCTVNodelet::odom_callback, this, ros::TransportHints().tcpNoDelay());
+//  position_cmd_sub_ = n.subscribe("position_cmd", 10, &ControlCCTVNodelet::position_cmd_callback, this,
 //                                  ros::TransportHints().tcpNoDelay());
-  enable_motors_sub_ = n.subscribe("motors", 2, &ControlCableVisionNodelet::enable_motors_callback, this,
+  enable_motors_sub_ = n.subscribe("motors", 2, &ControlCCTVNodelet::enable_motors_callback, this,
                                    ros::TransportHints().tcpNoDelay());
-  corrections_sub_ = n.subscribe("corrections", 10, &ControlCableVisionNodelet::corrections_callback, this,
+  corrections_sub_ = n.subscribe("corrections", 10, &ControlCCTVNodelet::corrections_callback, this,
                                  ros::TransportHints().tcpNoDelay());
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(ControlCableVisionNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(ControlCCTVNodelet, nodelet::Nodelet);
