@@ -293,12 +293,14 @@ void NodeletControlCCTV::estimate_cable_state(void){
   // 2. calculate q_i_dot
   const Eigen::Vector3d v_attach_0 = pl_vel_ + pl_omg_.cross(rho_i_);
   const Eigen::Vector3d v_attach_quad = v_attach_0 - quad_vel_;
-
   cable_q_dot_ = v_attach_quad / cable_length_;
 
   // 3. calculate w_i (yikes)
-  w_i_ = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
+  cable_w_ = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
 
+  cctv_controller_.set_q_i(cable_q_);
+  cctv_controller_.set_q_i_dot(cable_q_dot_);
+  cctv_controller_.set_w_i(cable_w_);
 }
 
 void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd)
@@ -403,10 +405,8 @@ void NodeletControlCCTV::onInit()
   cctv_controller_.set_l_i(cable_length_);
   cctv_controller_.set_rho(rho_);
   cctv_controller_.set_g  (g_);
-  cctv_controller_.set_idx(0);
-  cctv_controller_.set_n_bots(3);
-
-
+  cctv_controller_.set_idx(idx_);
+  cctv_controller_.set_n_bots(n_bots_);
 
   so3_command_pub_    = priv_nh.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
 
@@ -415,6 +415,9 @@ void NodeletControlCCTV::onInit()
   position_cmd_sub_   = priv_nh.subscribe("position_cmd", 10, &NodeletControlCCTV::position_cmd_callback,         this, ros::TransportHints().tcpNoDelay());
   enable_motors_sub_  = priv_nh.subscribe("motors",       2,  &NodeletControlCCTV::enable_motors_callback,        this, ros::TransportHints().tcpNoDelay());
   corrections_sub_    = priv_nh.subscribe("corrections",  10, &NodeletControlCCTV::corrections_callback,          this, ros::TransportHints().tcpNoDelay());
+
+
+
   ROS_INFO("nodelet control cctv is alive");
 }
 
