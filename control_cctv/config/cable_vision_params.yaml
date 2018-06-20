@@ -1,4 +1,4 @@
-﻿gains:
+gains:
   pos: {x: 7.4, y: 7.4, z: 10.4}
   vel: {x: 4.8, y: 4.8, z: 6.0}
   ki:  {x: 0.00, y: 0.00, z: 0.00}
@@ -17,7 +17,9 @@ max_pos_int_b: 0.5
 number_of_robots: 3
 
 quadrotor_name: dragonfly1
-mass: 0.250
+mass: 0.5
+payload_mass: 0.5
+cable_length: 0.25
 
 attachment:
   rho_0: {x: 1.000, y: 0.000, z: 0.000}

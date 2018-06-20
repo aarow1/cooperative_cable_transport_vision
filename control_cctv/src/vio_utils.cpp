@@ -23,20 +23,20 @@ return result;
 
 //Rodrigues formula from a vector to an homogeneous matrix
 Eigen::Matrix<double,4,4> VIOUtil::expSE3(const Eigen::Matrix<double, 6, 1>& mu){
-	 static const double one_6th = 1.0/6.0;
-	 static const double one_20th = 1.0/20.0;
+   static const double one_6th = 1.0/6.0;
+   static const double one_20th = 1.0/20.0;
 
 	 //the Inital SE3 should be initialized to the identity
-	 Eigen::Matrix<double, 4, 4> result;
+   Eigen::Matrix<double, 4, 4> result;
 	 result.setIdentity();
 
-	 const Eigen::Matrix<double, 3, 1> w = mu.block(3,0,3,1);//mu.tail<3>();
-	 const double theta_sq = w.transpose()*w;
-	 const double theta = sqrt(theta_sq);
-	 double A, B;
+   const Eigen::Matrix<double, 3, 1> w = mu.block(3,0,3,1);//mu.tail<3>();
+   const double theta_sq = w.transpose()*w;
+   const double theta = sqrt(theta_sq);
+   double A, B;
 
-	 Eigen::Matrix<double, 3, 1> mu_top = mu.block(0,0,3,1);
-	 const Eigen::Matrix<double,3,1> temp = w.cross(mu_top);//mu.head<3>()
+   Eigen::Matrix<double, 3, 1> mu_top = mu.block(0,0,3,1);
+   const Eigen::Matrix<double,3,1> temp = w.cross(mu_top);//mu.head<3>()
 	 if (theta_sq < 1e-8) {
 
 		  A = 1.0 - one_6th * theta_sq;
@@ -44,13 +44,13 @@ Eigen::Matrix<double,4,4> VIOUtil::expSE3(const Eigen::Matrix<double, 6, 1>& mu)
 		   //result.get_translation() = mu.block<0,0>(3,0) + 0.5 * temp;
 		  result.block(0,3,3,1) = mu_top + 0.5 * temp;
 	  } else {
-		   double C;
+       double C;
 			if (theta_sq < 1e-6) {
 				C = one_6th*(1.0 - one_20th * theta_sq);
 				A = 1.0 - theta_sq * C;
 				B = 0.5 - 0.25 * one_6th * theta_sq;
 			} else {
-				const double inv_theta = 1.0/theta;
+        const double inv_theta = 1.0/theta;
 				A = sin(theta) * inv_theta;
 				B = (1 - cos(theta)) * (inv_theta * inv_theta);
 				C = (1 - A) * (inv_theta * inv_theta);
@@ -59,7 +59,7 @@ Eigen::Matrix<double,4,4> VIOUtil::expSE3(const Eigen::Matrix<double, 6, 1>& mu)
 			 result.block(0,3,3,1) = mu_top + B*temp + C*(w.cross(temp));
 
 	  }
-	 Eigen::Matrix<double,3,3> Rot;
+   Eigen::Matrix<double,3,3> Rot;
 	 VIOUtil::rodrigues_so3_exp(w, A, B, Rot);
 	 result.block(0,0,3,3) = Rot;
 	 return result;
@@ -68,16 +68,16 @@ Eigen::Matrix<double,4,4> VIOUtil::expSE3(const Eigen::Matrix<double, 6, 1>& mu)
 //Exponential of SO3 to get the rotation matrix
 Eigen::Matrix<double,3,3> VIOUtil::expSO3(const Eigen::Matrix<double, 3, 1>& w){
 
-	  static const double one_6th = 1.0/6.0;
-	  static const double one_20th = 1.0/20.0;
+    static const double one_6th = 1.0/6.0;
+    static const double one_20th = 1.0/20.0;
 
 	 //the Inital SE3 should be initialized to the identity
-	 Eigen::Matrix<double,3,3> result;
+   Eigen::Matrix<double,3,3> result;
 	 result.setIdentity();
 
-	  const double theta_sq = w.transpose()*w;
-	  const double theta = sqrt(theta_sq);
-	  double A, B;
+    const double theta_sq = w.transpose()*w;
+    const double theta = sqrt(theta_sq);
+    double A, B;
 	  //Use a Taylor series expansion near zero. This is required for
 	  //accuracy, since sin t / t and (1-cos t)/t^2 are both 0/0.
 	  if (theta_sq < 1e-8) {
@@ -88,7 +88,7 @@ Eigen::Matrix<double,3,3> VIOUtil::expSO3(const Eigen::Matrix<double, 3, 1>& w){
 				 B = 0.5 - 0.25 * one_6th * theta_sq;
 				A = 1.0 - theta_sq * one_6th*(1.0 - one_20th * theta_sq);
 			} else {
-				 const double inv_theta = 1.0/theta;
+         const double inv_theta = 1.0/theta;
 				A = sin(theta) * inv_theta;
 				B = (1 - cos(theta)) * (inv_theta * inv_theta);
 			}
@@ -100,16 +100,16 @@ Eigen::Matrix<double,3,3> VIOUtil::expSO3(const Eigen::Matrix<double, 3, 1>& w){
 //Additional SO3
 void VIOUtil::rodrigues_so3_exp(const Eigen::Matrix<double,3,1>& w, const double A, const double B, Eigen::Matrix<double,3,3>& R){
 
-	       const double wx2 = w(0,0)*w(0,0);
-			 const double wy2 = w(1,0)*w(1,0);
-			 const double wz2 = w(2,0)*w(2,0);
+         const double wx2 = w(0,0)*w(0,0);
+       const double wy2 = w(1,0)*w(1,0);
+       const double wz2 = w(2,0)*w(2,0);
 
 			 R(0,0) = 1.0 - B*(wy2 + wz2);
 			 R(1,1) = 1.0 - B*(wx2 + wz2);
 			 R(2,2) = 1.0 - B*(wx2 + wy2);
 
-			 double a = A*w(2,0);
-			 double b = B*(w(0,0)*w(1,0));
+       double a = A*w(2,0);
+       double b = B*(w(0,0)*w(1,0));
 
 			 R(0,1) = b - a;
 			 R(1,0) = b + a;
@@ -176,17 +176,17 @@ while(sum_res.norm() > 0.1);
 
 //Logarithm formula from an homogeneous to a vector
 Eigen::Matrix<double, 6, 1> VIOUtil::LogSE3(const Eigen::Matrix<double,4,4>& SE3) {
-	 Eigen::Matrix<double,3,1> rot = LogSO3(get_rotation(SE3));
-	 const double theta = sqrt(rot.transpose()*rot);
+   Eigen::Matrix<double,3,1> rot = LogSO3(get_rotation(SE3));
+   const double theta = sqrt(rot.transpose()*rot);
 
-	 double shtot = 0.5;
+   double shtot = 0.5;
 	  if(theta > 0.00001) {
 		   shtot = sin(theta/2)/theta;
 	  }
 
 	  // now do the rotation
-	 const Eigen::Matrix<double,3,3> halfrotator = VIOUtil::expSO3(rot * -0.5);
-	 Eigen::Matrix<double,3,1> rottrans = halfrotator * VIOUtil::get_translation(SE3);
+   const Eigen::Matrix<double,3,3> halfrotator = VIOUtil::expSO3(rot * -0.5);
+   Eigen::Matrix<double,3,1> rottrans = halfrotator * VIOUtil::get_translation(SE3);
 
 	 if(theta > 0.001){
 		  rottrans -=(rot*((VIOUtil::get_translation(SE3).transpose() * rot) * (1.0-2.0*shtot) / (rot.transpose()*rot)));
@@ -196,7 +196,7 @@ Eigen::Matrix<double, 6, 1> VIOUtil::LogSE3(const Eigen::Matrix<double,4,4>& SE3
 
 	 rottrans /= (2 * shtot);
 
-	 Eigen::Matrix<double,6,1> result;
+   Eigen::Matrix<double,6,1> result;
 	 result.setZero();
 	 result.block(0,0,3,1) = rottrans;
 	 result.block(3,0,3,1) = rot;
@@ -209,14 +209,14 @@ Eigen::Matrix<double, 6, 1> VIOUtil::LogSE3(const Eigen::Matrix<double,4,4>& SE3
 //Logarithm formula from an homogeneous matrix to a vector for SO3
 Eigen::Matrix<double,3,1> VIOUtil::LogSO3(const Eigen::Matrix<double,3,3>& SO3){
 
-	 Eigen::Matrix<double, 3, 1> result;
+   Eigen::Matrix<double, 3, 1> result;
 	 result.setZero();
-	 const double cos_angle = (SO3(0,0) + SO3(1,1) + SO3(2,2) - 1.0) * 0.5;
+   const double cos_angle = (SO3(0,0) + SO3(1,1) + SO3(2,2) - 1.0) * 0.5;
 	 result(0,0) = (SO3(2,1)-SO3(1,2))/2;
 	 result(1,0) = (SO3(0,2)-SO3(2,0))/2;
 	 result(2,0) = (SO3(1,0)-SO3(0,1))/2;
 
-	 double sin_angle_abs = sqrt(result.transpose()*result);
+   double sin_angle_abs = sqrt(result.transpose()*result);
 
 	 if (cos_angle > M_SQRT1_2) {            // [0 - Pi/4[ use asin
 		  if(sin_angle_abs > 0){
@@ -224,7 +224,7 @@ Eigen::Matrix<double,3,1> VIOUtil::LogSO3(const Eigen::Matrix<double,3,3>& SO3){
 		  }
 	 }
 	 else if( cos_angle > -M_SQRT1_2) {    // [Pi/4 - 3Pi/4[ use acos, but antisymmetric part
-		  const double angle = acos(cos_angle);
+      const double angle = acos(cos_angle);
 		  result *= angle / sin_angle_abs;
 
 
@@ -232,11 +232,11 @@ Eigen::Matrix<double,3,1> VIOUtil::LogSO3(const Eigen::Matrix<double,3,3>& SO3){
 	 else
 	 {  // rest use symmetric part
 		 // antisymmetric part vanishes, but still large rotation, need information from symmetric part
-		  const double angle = M_PI - asin(sin_angle_abs);
-		  const double d0 = SO3(0,0) - cos_angle,
+      const double angle = M_PI - asin(sin_angle_abs);
+      const double d0 = SO3(0,0) - cos_angle,
 		      d1 = SO3(1,1) - cos_angle,
 		      d2 = SO3(2,2) - cos_angle;
-		      Eigen::Matrix<double,3,1> r2;
+          Eigen::Matrix<double,3,1> r2;
 
 				if(d0*d0 > d1*d1 && d0*d0 > d2*d2){ // first is largest, fill with first column
 					r2(0,0) = d0;
@@ -389,15 +389,15 @@ void VIOUtil::PointCovariance(Eigen::Matrix<double,4,4>& se3BtoA, const Eigen::M
 
 
 Eigen::Matrix<double,6,6> VIOUtil::parallel_transport_helper(const Eigen::Matrix<double, 6, 1> &dx) {
-	 Eigen::Matrix<double,6,6> M = Eigen::Matrix<double,6,6>::Zero();
-	 M.block<3,3>(3,3) = Eigen::Matrix<double,3,3>::Identity();
+   Eigen::Matrix<double,6,6> M = Eigen::Matrix<double,6,6>::Zero();
+   M.block<3,3>(3,3) = Eigen::Matrix<double,3,3>::Identity();
 	 M.block<3,3>(0,0) = VIOUtil::expSO3(0.5*dx.block<3,1>(0,0));
 
-	 Eigen::Matrix<double,3,1> w = dx.block<3,1>(3,0);
-	 const double theta = w.norm()/2.0;
-	 const double theta_sq = theta*theta;
+   Eigen::Matrix<double,3,1> w = dx.block<3,1>(3,0);
+   const double theta = w.norm()/2.0;
+   const double theta_sq = theta*theta;
 
-	 double A, B;
+   double A, B;
 	 //Use a Taylor series expansion near zero. This is required for
 	 //accuracy, since (1/t + (1-cos t)/t^2)  and (1/th^2 - (sin t)/t^3) are both 0/0.
 	 if (theta_sq < 1e-8) {
@@ -410,13 +410,13 @@ Eigen::Matrix<double,6,6> VIOUtil::parallel_transport_helper(const Eigen::Matrix
 
 			 // we can probably drop the last terms in these
 		  } else {
-			   const double inv_theta = 1.0/theta;
+         const double inv_theta = 1.0/theta;
 				A = inv_theta*inv_theta - cos(theta)*inv_theta*inv_theta;
 			  B = (theta - sin(theta)) * (inv_theta * inv_theta * inv_theta);
 		 }
 	}
 
-	Eigen::Matrix<double,3,3> bottom_left;
+  Eigen::Matrix<double,3,3> bottom_left;
 
 	VIOUtil::rodrigues_so3_exp(w, A, B, bottom_left);
 	M.block<3,3>(3,0) = bottom_left * getSkew(dx.block<3,1>(3,0));
@@ -599,7 +599,7 @@ Eigen::Matrix<double, 3,3> VIOUtil::ypr_to_R(const Eigen::Matrix<double, 3,1>& y
 }
 
 Eigen::Matrix<double, 3, 3> VIOUtil::getSkew(const Eigen::Matrix<double, 3,1>& twist){
-	 Eigen::Matrix<double, 3, 3> S;
+   Eigen::Matrix<double, 3, 3> S;
 	 S. setZero();
 	 S(0,1) = -twist(2,0);
 	 S(0,2) = twist(1,0);
@@ -623,7 +623,7 @@ Eigen::Matrix<double, 3, 1> VIOUtil::vee(const Eigen::Matrix<double, 3,3>& skew)
     }
 
 Eigen::Matrix<double, 6, 6> VIOUtil::adjSE3(const Eigen::Matrix<double, 4, 4> T){
-	 Eigen::Matrix<double, 6, 6> adj;
+   Eigen::Matrix<double, 6, 6> adj;
 	 adj.setZero();
 	 adj.block(0,0,3,3) = T.block(0,0,3,3);
 	 adj.block(0,3,3,3) = VIOUtil::getSkew(T.block(0,3,3,1))*T.block(0,0,3,3);

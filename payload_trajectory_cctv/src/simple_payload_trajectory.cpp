@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 
     msgs_cctv::PayloadTrajCommand msg;
     msg.header.stamp = ros::Time::now();
-    msg.header.frame_id = "global";
+    msg.header.frame_id = "simulator";
 
     double t = ros::Time::now().toSec();
     double omega_x = 1;

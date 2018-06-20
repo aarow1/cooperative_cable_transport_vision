@@ -52,11 +52,13 @@ catkin_package(
 
 set(SOURCE_FILES
       src/ControlCCTV.cpp
+      src/SO3Control.cpp
       src/vio_utils.cpp
 )
 
 set(HEADER_FILES
    include/control_cctv/ControlCCTV.h
+   include/control_cctv/SO3Control.h
    include/control_cctv/vio_utils.h
 )
 
@@ -67,32 +69,12 @@ add_library(nodelet_control_cctv src/NodeletControlCCTV.cpp)
 add_dependencies(nodelet_control_cctv ${catkin_EXPORTED_TARGETS})
 target_link_libraries(nodelet_control_cctv control_cctv_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
 
+install(TARGETS nodelet_control_cctv
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-#add_executable(ControlCableVision src/ControlCableVision.cpp)
-#add_dependencies(ControlCableVision ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-#target_link_libraries(ControlCableVision ${catkin_LIBRARIES})
-
-#add_library(vio_utils src/vio_utils.cpp)
-#target_link_libraries(vio_utils ${catkin_LIBRARIES})
-
-#add_library(so3_control_nodelet src/so3_control_nodelet.cpp)
-#add_dependencies(so3_control_nodelet ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(so3_control_nodelet SO3Control ${catkin_LIBRARIES})
-
-#add_library(so3_trpy_control src/so3_trpy_control.cpp)
-#add_dependencies(so3_trpy_control ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(so3_trpy_control SO3Control ${catkin_LIBRARIES})
-
-#install(TARGETS
-#	 ControlCableVision
-#	 vio_utils
-##    so3_control_nodelet
-##    so3_trpy_control
-#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
-
-#install(DIRECTORY config/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
-#install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
-#install(FILES nodelet_plugin.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY config/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
+install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+install(FILES nodelet_plugin.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
