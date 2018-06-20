@@ -12,11 +12,11 @@ class ControlCCTV
 
 //  void setMass(const double mass);
 //  void setGravity(const double g);
-//  void setPosition(const Eigen::Vector3f &position);
-//  void setVelocity(const Eigen::Vector3f &velocity);
+//  void setPosition(const Eigen::Vector3d &position);
+//  void setVelocity(const Eigen::Vector3d &velocity);
 //  void setMaxIntegral(const double max_integral);
 //  void setMaxIntegralBody(const double max_integral_b);
-//  void setCurrentOrientation(const Eigen::Quaternionf &current_orientation);
+//  void setCurrentOrientation(const Eigen::Quaterniond &current_orientation);
 //  void resetIntegrals();
 //  void setMaxTiltAngle(const double max_tilt_angle);
 
@@ -124,8 +124,8 @@ private:
   Eigen::Vector3d force_;
   Eigen::Quaterniond orientation_;
   Eigen::Vector3d angular_velocity_;
-  //  Eigen::Vector3f pos_int_;
-  //  Eigen::Vector3f pos_int_b_;
+  //  Eigen::Vector3d pos_int_;
+  //  Eigen::Vector3d pos_int_b_;
 
   //  Did not replace these yet
   //  double max_pos_int_;

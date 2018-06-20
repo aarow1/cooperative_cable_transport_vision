@@ -1,4 +1,4 @@
-﻿/*
+/*
 * vio_utils.h
 *
 *  Created on: 04.30.2015
