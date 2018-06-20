@@ -2,21 +2,22 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <Eigen/Geometry>
 #include <msgs_cctv/PayloadTrajCommand.h>
+#include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 
 // Global variables
-ros::Publisher pl_pose_pub;
+ros::Publisher pl_odom_pub;
 ros::Publisher pl_viz_pub;
 
 // Function prototypes
-void pub_marker_viz(msgs_cctv::PayloadTrajCommand pl_msg);
+void pub_marker_viz(nav_msgs::Odometry pl_msg);
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "talker");
 
   ros::NodeHandle n;
-  pl_pose_pub = n.advertise<msgs_cctv::PayloadTrajCommand>("pl_pose", 1000);
+  pl_odom_pub = n.advertise<nav_msgs::Odometry>("pl_pose", 1000);
   pl_viz_pub  = n.advertise<visualization_msgs::Marker>("pl_viz", 1000);
 
   ros::Rate loop_rate(10);
@@ -25,19 +26,25 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
 
-    msgs_cctv::PayloadTrajCommand msg;
-    msg.header.stamp = ros::Time::now();
-    msg.header.frame_id = "simulator";
+    nav_msgs::Odometry odom_msg;
+    odom_msg.header.stamp = ros::Time::now();
+    odom_msg.header.frame_id = "simulator";
 
     double t = ros::Time::now().toSec();
-    double omega_x = 1;
-    double omega_y = 2;
+    double omega_x = 0.1;
+    double omega_y = 0.2;
+    double a_x = 2;
+    double a_y = 2;
 
-    msg.pose.position.x = sin(omega_x * t);
-    msg.pose.position.y = sin(omega_y * t);
-    msg.pose.position.z = 0.0;
+    odom_msg.pose.pose.position.x = a_x*sin(omega_x * t);
+    odom_msg.pose.pose.position.y = a_y*sin(omega_y * t);
+    odom_msg.pose.pose.position.z = 0.0;
 
-    double eul_z = fmod(t, 2*M_PI); // yaw
+    odom_msg.twist.twist.linear.x = a_x*omega_x*cos(omega_x*t);
+    odom_msg.twist.twist.linear.y = a_y*omega_x*cos(omega_y*t);
+    odom_msg.twist.twist.linear.z = 0;
+
+    double eul_z = fmod(0.1*t, 2*M_PI); // yaw
     double eul_y = 0.5*sin(0.5*t); // pitch
     double eul_x = 0; // roll
 
@@ -49,13 +56,13 @@ int main(int argc, char **argv)
 
     ROS_INFO("eul_z %2.2f", eul_z);
 
-    msg.pose.orientation.x = pl_orientation.x();
-    msg.pose.orientation.y = pl_orientation.y();
-    msg.pose.orientation.z = pl_orientation.z();
-    msg.pose.orientation.w = pl_orientation.w();
+    odom_msg.pose.pose.orientation.x = pl_orientation.x();
+    odom_msg.pose.pose.orientation.y = pl_orientation.y();
+    odom_msg.pose.pose.orientation.z = pl_orientation.z();
+    odom_msg.pose.pose.orientation.w = pl_orientation.w();
 
-    pl_pose_pub.publish(msg);
-    pub_marker_viz(msg);
+    pl_odom_pub.publish(odom_msg);
+    pub_marker_viz(odom_msg);
 
     ros::spinOnce();
 
@@ -66,11 +73,11 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void pub_marker_viz(msgs_cctv::PayloadTrajCommand pl_msg){
+void pub_marker_viz(nav_msgs::Odometry pl_msg){
   visualization_msgs::Marker marker;
 
   marker.header = pl_msg.header;
-  marker.pose = pl_msg.pose;
+  marker.pose = pl_msg.pose.pose;
 
   // marker setup
   marker.ns = "payload_marker";
@@ -82,7 +89,7 @@ void pub_marker_viz(msgs_cctv::PayloadTrajCommand pl_msg){
   // marker appearance
   marker.scale.x = 1.0;
   marker.scale.y = 2.0;
-  marker.scale.z = 0.1;
+  marker.scale.z = 0.02;
   marker.color.r = 1.0;
   marker.color.g = 0.0;
   marker.color.b = 0.0;

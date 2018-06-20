@@ -23,9 +23,10 @@ class NodeletControlCCTV : public nodelet::Nodelet
       current_yaw_(0),
       enable_motors_(false),
       use_external_yaw_(false),
-      have_odom_(false),
+      have_quad_odom_(false),
+      have_payload_odom_(false),
       g_(9.81),
-      current_orientation_(Eigen::Quaterniond::Identity())
+      quad_orr_(Eigen::Quaterniond::Identity())
   {
 //    controller_.resetIntegrals();
   }
@@ -37,10 +38,12 @@ class NodeletControlCCTV : public nodelet::Nodelet
  private:
   void publishSO3Command(); // Still publish so3commands to attitude controller
   void position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd);
-  void payload_position_cmd_callback(const msgs_cctv::PayloadCommandConstPtr &cmd);
-  void quad_odom_callback(const nav_msgs::Odometry::ConstPtr &odom);
+  void payload_odom_callback(const nav_msgs::Odometry::ConstPtr &pl_odom);
+  void quad_odom_callback(const nav_msgs::Odometry::ConstPtr &quad_odom);
   void enable_motors_callback(const std_msgs::Bool::ConstPtr &msg);
   void corrections_callback(const quadrotor_msgs::Corrections::ConstPtr &msg);
+
+  void estimate_cable_state(void);
 
   // Keep two controllers to switch between them
   ControlCCTV cctv_controller_;
@@ -68,7 +71,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
   double k_pos_0_, k_vel_0_, k_R_0_, k_Omega_0_, k_q_, k_w_;
   double des_yaw_i_, des_yaw_dot_i_;
   double current_yaw_;
-  bool enable_motors_, use_external_yaw_, have_odom_;
+  bool enable_motors_, use_external_yaw_, have_quad_odom_, have_payload_odom_;
   double kR_[3], kOm_[3], corrections_[3];
 
   //System definition
@@ -79,10 +82,26 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Matrix3d J_i_;
   double cable_length_;
   Eigen::Matrix3d rho_;
+  Eigen::Vector3d rho_i_; // my cable attachment point
   int idx_;
   int n_bots_;
 
-  Eigen::Quaterniond current_orientation_;
+  // Quad state
+  Eigen::Vector3d     quad_pos_;
+  Eigen::Vector3d     quad_vel_;
+  Eigen::Quaterniond  quad_orr_;
+  Eigen::Vector3d     quad_omg_;
+
+  // Cable state
+  Eigen::Vector3d     cable_q_;     // unit vector from robot to attachment point
+  Eigen::Vector3d     cable_q_dot_;
+  Eigen::Vector3d     cable_w_;
+
+  // Payload state
+  Eigen::Vector3d     pl_pos_;
+  Eigen::Vector3d     pl_vel_;
+  Eigen::Quaterniond  pl_orr_;
+  Eigen::Vector3d     pl_omg_;
 
   enum Controller {SO3_CONTROL, CCTV_CONTROL};
   Controller active_controller_ = SO3_CONTROL;
@@ -91,7 +110,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
 
 void NodeletControlCCTV::publishSO3Command()
 {
-  if (!have_odom_)
+  if (!have_quad_odom_)
   {
     ROS_WARN("No odometry! Not publishing SO3Command.");
     return;
@@ -187,35 +206,99 @@ void NodeletControlCCTV::publishSO3Command()
   so3_command_pub_.publish(so3_command);
 }
 
-void NodeletControlCCTV::payload_position_cmd_callback(const msgs_cctv::PayloadCommandConstPtr &cmd)
+void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPtr &pl_odom)
 {
-  des_pos_0_ = Eigen::Vector3d( cmd->payload_position.x,
-                                cmd->payload_position.y,
-                                cmd->payload_position.z);
-  des_vel_0_ = Eigen::Vector3d( cmd->payload_velocity.x,
-                                cmd->payload_velocity.y,
-                                cmd->payload_velocity.z);
-  des_acc_0_ = Eigen::Vector3d( cmd->payload_acceleration.x,
-                                cmd->payload_acceleration.y,
-                                cmd->payload_acceleration.z);
-  des_R_0_   = Eigen::Quaterniond(cmd->payload_orientation.w,
-                                  cmd->payload_orientation.x,
-                                  cmd->payload_orientation.y,
-                                  cmd->payload_orientation.z);
-  des_Omega_0_ = Eigen::Vector3d( cmd->payload_angular_velocity.x,
-                                cmd->payload_angular_velocity.y,
-                                cmd->payload_angular_velocity.z);
-  des_alpha_0_ = Eigen::Vector3d( cmd->payload_angular_acceleration.x,
-                                cmd->payload_angular_acceleration.y,
-                                cmd->payload_angular_acceleration.z);
-  k_pos_0_  = cmd->k_x_payload;
-  k_vel_0_  = cmd->k_v_payload;
-  k_R_0_    = cmd->k_R_payload;
-  k_Omega_0_= cmd->k_Omega_payload;
-  k_q_      = cmd->k_cable_angle;
-  k_w_      = cmd->k_cable_angular_velocity;
+
+  ROS_INFO_THROTTLE(2, "control nodelet got payload odom");
+
+  pl_pos_(0)  = pl_odom->pose.pose.position.x;
+  pl_pos_(1)  = pl_odom->pose.pose.position.y;
+  pl_pos_(2)  = pl_odom->pose.pose.position.z;
+  pl_vel_(0)  = pl_odom->twist.twist.linear.x;
+  pl_vel_(1)  = pl_odom->twist.twist.linear.y;
+  pl_vel_(2)  = pl_odom->twist.twist.linear.z;
+  pl_orr_.x() = pl_odom->pose.pose.orientation.x;
+  pl_orr_.y() = pl_odom->pose.pose.orientation.y;
+  pl_orr_.z() = pl_odom->pose.pose.orientation.z;
+  pl_orr_.w() = pl_odom->pose.pose.orientation.w;
+  pl_omg_(0)  = pl_odom->twist.twist.angular.x;
+  pl_omg_(1)  = pl_odom->twist.twist.angular.y;
+  pl_omg_(2)  = pl_odom->twist.twist.angular.z;
+
+  // Set payload state using controller accessors
+  cctv_controller_.set_pos_0  (pl_pos_);
+  cctv_controller_.set_vel_0  (pl_vel_);
+  cctv_controller_.set_R_0    (pl_orr_.normalized().toRotationMatrix());
+  cctv_controller_.set_Omega_0(pl_omg_);
 
   publishSO3Command();
+}
+
+
+void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &quad_odom)
+{
+  have_quad_odom_ = true;
+
+  quad_pos_(0) = quad_odom->pose.pose.position.x;
+  quad_pos_(1) = quad_odom->pose.pose.position.y;
+  quad_pos_(2) = quad_odom->pose.pose.position.z;
+  quad_vel_(0) = quad_odom->twist.twist.linear.x;
+  quad_vel_(1) = quad_odom->twist.twist.linear.y;
+  quad_vel_(2) = quad_odom->twist.twist.linear.z;
+  quad_orr_.x() = quad_odom->pose.pose.orientation.x;
+  quad_orr_.y() = quad_odom->pose.pose.orientation.y;
+  quad_orr_.z() = quad_odom->pose.pose.orientation.z;
+  quad_orr_.w() = quad_odom->pose.pose.orientation.w;
+  quad_omg_(0) = quad_odom->twist.twist.angular.x;
+  quad_omg_(1) = quad_odom->twist.twist.angular.y;
+  quad_omg_(2) = quad_odom->twist.twist.angular.z;
+
+  current_yaw_ = tf::getYaw(quad_odom->pose.pose.orientation);
+
+  so3_controller_.setPosition(quad_pos_);
+  so3_controller_.setVelocity(quad_vel_);
+  so3_controller_.setCurrentOrientation(quad_orr_);
+
+  cctv_controller_.set_R_i(quad_orr_.normalized().toRotationMatrix());
+  cctv_controller_.set_Omega_i(quad_omg_);
+  estimate_cable_state();
+
+
+  if(position_cmd_init_)
+  {
+    // We set position_cmd_updated_ = false and expect that the
+    // position_cmd_callback would set it to true since typically a position_cmd
+    // message would follow an odom message. If not, the position_cmd_callback
+    // hasn't been called and we publish the so3 command ourselves
+    // TODO: Fallback to hover if position_cmd hasn't been received for some time
+    if(!position_cmd_updated_)
+      publishSO3Command();
+    position_cmd_updated_ = false;
+  }
+}
+
+//------------------------------------------------------------------------------------------------
+// Hacky stuff about cable angle, todo NEEDS TO BE DONE BETTER
+//------------------------------------------------------------------------------------------------
+void NodeletControlCCTV::estimate_cable_state(void){
+
+  // Note: p = location, v = velocity, p_b_0 = position, of(sub) b, in-frame(super) 0
+
+  // 1. calculate q_i
+  const Eigen::Matrix3d R_pl_0 = pl_orr_.normalized().toRotationMatrix();
+  const Eigen::Vector3d p_attach_0 = pl_pos_ + (R_pl_0 * rho_i_);
+  const Eigen::Vector3d p_attach_quad = (p_attach_0 - quad_pos_);
+  cable_q_.normalize();
+
+  // 2. calculate q_i_dot
+  const Eigen::Vector3d v_attach_0 = pl_vel_ + pl_omg_.cross(rho_i_);
+  const Eigen::Vector3d v_attach_quad = v_attach_0 - quad_vel_;
+
+  cable_q_dot_ = v_attach_quad / cable_length_;
+
+  // 3. calculate w_i (yikes)
+  w_i_ = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
+
 }
 
 void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd)
@@ -233,39 +316,6 @@ void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCom
   //position_cmd_init_ = true;
 
   publishSO3Command();
-}
-
-void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &odom)
-{
-  have_odom_ = true;
-
-  const Eigen::Vector3d position(odom->pose.pose.position.x,
-                                 odom->pose.pose.position.y,
-                                 odom->pose.pose.position.z);
-  const Eigen::Vector3d velocity(odom->twist.twist.linear.x,
-                                 odom->twist.twist.linear.y,
-                                 odom->twist.twist.linear.z);
-
-  current_yaw_ = tf::getYaw(odom->pose.pose.orientation);
-
-  current_orientation_ = Eigen::Quaterniond(odom->pose.pose.orientation.w, odom->pose.pose.orientation.x,
-                                            odom->pose.pose.orientation.y, odom->pose.pose.orientation.z);
-
-  so3_controller_.setPosition(position);
-  so3_controller_.setVelocity(velocity);
-  so3_controller_.setCurrentOrientation(current_orientation_);
-
-  if(position_cmd_init_)
-  {
-    // We set position_cmd_updated_ = false and expect that the
-    // position_cmd_callback would set it to true since typically a position_cmd
-    // message would follow an odom message. If not, the position_cmd_callback
-    // hasn't been called and we publish the so3 command ourselves
-    // TODO: Fallback to hover if position_cmd hasn't been received for some time
-    if(!position_cmd_updated_)
-      publishSO3Command();
-    position_cmd_updated_ = false;
-  }
 }
 
 void NodeletControlCCTV::enable_motors_callback(const std_msgs::Bool::ConstPtr &msg)
@@ -330,6 +380,7 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("payload_mass", payload_mass_, 1.0);
   priv_nh.param("cable_length", cable_length_, 0.33);
   priv_nh.param("number_of_robots", n_bots_, 5);
+  priv_nh.param("my_index", idx_, 0);
 
   // Retrieve attachment point params for all robots
   for (int i=0; i<n_bots_; i++){
@@ -342,6 +393,7 @@ void NodeletControlCCTV::onInit()
     if(!priv_nh.getParam(param_name + "/z", rho_(2, i)))
       ROS_ERROR("Couldn't find param: %s/z", param_name.c_str());
   }
+  rho_i_ = rho_.block<3,1>(0, idx_);
 
   // Set cctv controller params
   cctv_controller_.set_m_0(payload_mass_);
@@ -358,11 +410,11 @@ void NodeletControlCCTV::onInit()
 
   so3_command_pub_    = priv_nh.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
 
-  payload_odom_sub_   = priv_nh.subscribe("payload_odom", 10, &NodeletControlCCTV::payload_position_cmd_callback, this, ros::TransportHints().tcpNoDelay());
+  payload_odom_sub_   = priv_nh.subscribe("payload_odom", 10, &NodeletControlCCTV::payload_odom_callback,         this, ros::TransportHints().tcpNoDelay());
   quad_odom_sub_      = priv_nh.subscribe("quad_odom",    10, &NodeletControlCCTV::quad_odom_callback,            this, ros::TransportHints().tcpNoDelay());
   position_cmd_sub_   = priv_nh.subscribe("position_cmd", 10, &NodeletControlCCTV::position_cmd_callback,         this, ros::TransportHints().tcpNoDelay());
   enable_motors_sub_  = priv_nh.subscribe("motors",       2,  &NodeletControlCCTV::enable_motors_callback,        this, ros::TransportHints().tcpNoDelay());
-  corrections_sub_    = priv_nh.subscribe("corrections",  10, &NodeletControlCCTV::corrections_callback,           this, ros::TransportHints().tcpNoDelay());
+  corrections_sub_    = priv_nh.subscribe("corrections",  10, &NodeletControlCCTV::corrections_callback,          this, ros::TransportHints().tcpNoDelay());
   ROS_INFO("nodelet control cctv is alive");
 }
 
