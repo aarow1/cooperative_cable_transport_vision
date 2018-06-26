@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <Eigen/Geometry>
 #include <msgs_cctv/PayloadTrajCommand.h>
 #include <nav_msgs/Odometry.h>
@@ -8,6 +9,13 @@
 // Global variables
 ros::Publisher pl_odom_pub;
 ros::Publisher pl_viz_pub;
+ros::Subscriber input_wrench_sub;
+
+// Payload state
+Eigen::Vector3d     pos;
+Eigen::Vector3d     vel;
+Eigen::Quaterniond  orr;
+Eigen::Quaterniond  omg;
 
 // Function prototypes
 void pub_marker_viz(nav_msgs::Odometry pl_msg);
@@ -19,6 +27,8 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   pl_odom_pub = n.advertise<nav_msgs::Odometry>("pl_pose", 1000);
   pl_viz_pub  = n.advertise<visualization_msgs::Marker>("pl_viz", 1000);
+
+  input_wrench_sub = n.subscribe("external_wrench", 100, input_wrench_cb);
 
   ros::Rate loop_rate(10);
 
@@ -88,6 +98,11 @@ int main(int argc, char **argv)
 
 
   return 0;
+}
+
+void input_wrench_cb(geometry_msgs::WrenchStamped msg){
+  const Eigen::Vector3d input_force(msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
+  const Eigen::Vector3d input_moment(msg.wrench.torque.x,msg.wrench.torque.y,msg.wrench.torque.z);
 }
 
 void pub_marker_viz(nav_msgs::Odometry pl_msg){

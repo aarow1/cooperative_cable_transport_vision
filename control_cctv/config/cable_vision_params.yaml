@@ -19,8 +19,16 @@ number_of_robots: 3
 quadrotor_name: dragonfly1
 mass: 0.5
 payload_mass: 0.5
-cable_length: 0.25
+cable_length: 1.0
 my_index: 0
+
+k_pos_0: 1.0
+k_vel_0: 0.0
+k_R_0: 0.0
+k_Omega_0: 0.0
+k_q: 0.001
+k_w: 0.0
+
 
 attachment:
   rho_0: {x: 1.000, y: 0.000, z: 0.000}
