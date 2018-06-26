@@ -173,6 +173,7 @@ void ControlCableVision::calculateControl(const Eigen::Vector3d &des_pos_0,
 
   ROS_DEBUG_COND(DEBUG, "line 110");
 
+  //feed forward acceleration
   const Eigen::Vector3d a_i = des_acc_0 + g_ * Eigen::Vector3d::UnitZ()
       + R_0_ * VIOUtil::getSkew(Omega_0_) * VIOUtil::getSkew(Omega_0_) * rho_.block<3,1>(0,idx_)
       - R_0_ * VIOUtil::getSkew(rho_.block<3,1>(0,idx_)) * des_alpha_0;

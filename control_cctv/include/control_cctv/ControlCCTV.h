@@ -99,12 +99,12 @@ private:
 
   // Gains
   // TODO: decide if these should be params. Maybe dynamic reconfigure
-  double k_pos_0_;          // payload position gain
-  double k_vel_0_;          // payload velocity gain
-  double k_R_0_;            // payload orientation gain
-  double k_Omega_0_;        // payload angular velocity gain
-  double k_q;               // cable direction gain
-  double k_w;               // cable angular velocity gain
+//  double k_pos_0_;          // payload position gain
+//  double k_vel_0_;          // payload velocity gain
+//  double k_R_0_;            // payload orientation gain
+//  double k_Omega_0_;        // payload angular velocity gain
+//  double k_q;               // cable direction gain
+//  double k_w;               // cable angular velocity gain
 
   // Payload forces
 //  Eigen::Vector3d F_0_des_;   // Desired overall payload force (calculated)
@@ -124,6 +124,7 @@ private:
   Eigen::Vector3d force_;
   Eigen::Quaterniond orientation_;
   Eigen::Vector3d angular_velocity_;
+
   //  Eigen::Vector3d pos_int_;
   //  Eigen::Vector3d pos_int_b_;
 
