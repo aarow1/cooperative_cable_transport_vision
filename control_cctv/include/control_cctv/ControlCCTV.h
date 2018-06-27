@@ -61,6 +61,8 @@ class ControlCCTV
   const Eigen::Vector3d     &getComputedForce();
   const Eigen::Quaterniond  &getComputedOrientation();
   const Eigen::Vector3d     &getComputedAngularVelocity();
+  const Eigen::Vector3d     &get_u_i_parallel();
+  const Eigen::Vector3d     &get_u_i_perpendicular();
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
@@ -125,6 +127,9 @@ private:
   Eigen::Quaterniond orientation_;
   Eigen::Vector3d angular_velocity_;
 
+  // debugging outputs of controller
+  Eigen::Vector3d u_i_parallel;
+  Eigen::Vector3d u_i_perpendicular;
   //  Eigen::Vector3d pos_int_;
   //  Eigen::Vector3d pos_int_b_;
 
