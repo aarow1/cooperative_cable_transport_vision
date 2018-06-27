@@ -216,7 +216,7 @@ void ControlCCTV::calculateControl(const Eigen::Vector3d &des_pos_0,
   ROS_WARN_THROTTLE(1, "controller a_i = [%2.2f, %2.2f, %2.2f]", a_i(0), a_i(1), a_i(2));
 
   // Parallel component of control
-  const Eigen::Vector3d u_i_parallel = mu_i
+  u_i_parallel = mu_i
       + (m_i_ * l_i_ * (w_i_.norm() * w_i_.norm()) * q_i_)
       + (m_i_ * q_i_ * q_i_.transpose() * a_i);
 
@@ -233,7 +233,9 @@ void ControlCCTV::calculateControl(const Eigen::Vector3d &des_pos_0,
 
   const Eigen::Matrix3d q_i_hat = VIOUtil::getSkew(q_i_);
   const Eigen::Matrix3d q_i_hat_2 = q_i_hat * q_i_hat;
-  ROS_WARN_THROTTLE(1, "q_i_hat: [%2.2f, %2.2f, %2.2f]", q_i_hat(0), q_i_hat(1), q_i_hat(2));
+  ROS_WARN_THROTTLE(1, "q_i_hat: [%2.2f, %2.2f, %2.2f]", q_i_hat(0,0), q_i_hat(0,1), q_i_hat(0,2));
+  ROS_WARN_THROTTLE(1, "q_i_hat: [%2.2f, %2.2f, %2.2f]", q_i_hat(1,0), q_i_hat(1,1), q_i_hat(1,2));
+  ROS_WARN_THROTTLE(1, "q_i_hat: [%2.2f, %2.2f, %2.2f]", q_i_hat(2,0), q_i_hat(2,1), q_i_hat(2,2));
 
   const Eigen::Vector3d e_q_i = q_i_des_.cross(q_i_);
   const Eigen::Vector3d e_w_i = w_i_ + q_i_hat_2 * w_i_des;
@@ -243,15 +245,22 @@ void ControlCCTV::calculateControl(const Eigen::Vector3d &des_pos_0,
   ROS_WARN_THROTTLE(1, "q_i_dot_: [%2.2f, %2.2f, %2.2f]", q_i_dot_(0), q_i_dot_(1), q_i_dot_(2));
 
   // Perpendicular component of control <eq 27>
-  const Eigen::Vector3d u_i_perpendicular = (m_i_ * l_i_ * q_i_hat) * (
-        (-k_q*e_q_i)
+  u_i_perpendicular = (m_i_*l_i_*q_i_hat) *
+        (-1.0*k_q*e_q_i)
         - (k_w*e_w_i)
-//        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
-//        - (q_i_hat_2 *w_i_des_dot)
-        );
-//        - (m_i_ * q_i_hat_2 * a_i); //TODO: add delta term here, equation 27
+        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
+        - (q_i_hat_2 *w_i_des_dot)
+        - (m_i_ * q_i_hat_2 * a_i); //TODO: add delta term here, equation 27
 
   const Eigen::Vector3d u_i_ = u_i_parallel + u_i_perpendicular;
+  ROS_WARN_THROTTLE(1, "m_i_: %2.2f", m_i_);
+  ROS_WARN_THROTTLE(1, "l_i_: %2.2f", l_i_);
+
+  const Eigen::Matrix3d perp_db = (m_i_ * l_i_ * q_i_hat);
+  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(0,0), perp_db(0,1), perp_db(0,2));
+  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(1,0), perp_db(1,1), perp_db(1,2));
+  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(2,0), perp_db(2,1), perp_db(2,2));
+
   ROS_WARN_THROTTLE(1, "u_i_parallel: [%2.2f, %2.2f, %2.2f]", u_i_parallel(0), u_i_parallel(1), u_i_parallel(2));
   ROS_WARN_THROTTLE(1, "u_i_perpendicular: [%2.2f, %2.2f, %2.2f]", u_i_perpendicular(0), u_i_perpendicular(1), u_i_perpendicular(2));
   ROS_WARN_THROTTLE(1, "u_i_: [%2.2f, %2.2f, %2.2f]", u_i_(0), u_i_(1), u_i_(2));
@@ -299,4 +308,10 @@ const Eigen::Quaterniond  &ControlCCTV::getComputedOrientation(){
 }
 const Eigen::Vector3d     &ControlCCTV::getComputedAngularVelocity(){
   return angular_velocity_;
+}
+const Eigen::Vector3d     &ControlCCTV::get_u_i_parallel(){
+  return u_i_parallel;
+}
+const Eigen::Vector3d     &ControlCCTV::get_u_i_perpendicular(){
+  return u_i_perpendicular;
 }

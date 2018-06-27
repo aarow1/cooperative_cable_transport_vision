@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
 
-    const bool MOVE = 0;
+    const bool MOVE = 1;
 
     nav_msgs::Odometry odom_msg;
     odom_msg.header.stamp = ros::Time::now();

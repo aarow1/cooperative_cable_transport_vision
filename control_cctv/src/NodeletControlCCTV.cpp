@@ -11,6 +11,7 @@
 #include <control_cctv/ControlCCTV.h>
 #include <control_cctv/SO3Control.h>
 #include <tf/transform_datatypes.h>
+#include <visualization_msgs/MarkerArray.h>
 
 class NodeletControlCCTV : public nodelet::Nodelet
 {
@@ -45,6 +46,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
   void use_cctv_control_callback(const std_msgs::Bool::ConstPtr &msg);
 
   void estimate_cable_state(void);
+  void viz_cctv_control(void);
 
   // Keep two controllers to switch between them
   ControlCCTV cctv_controller_;
@@ -54,6 +56,8 @@ class NodeletControlCCTV : public nodelet::Nodelet
   ros::Subscriber payload_odom_sub_;
   ros::Subscriber quad_odom_sub_, position_cmd_sub_, enable_motors_sub_, corrections_sub_;
   ros::Subscriber use_cctv_control_sub_;
+
+  ros::Publisher rviz_marker_pub;
 
   bool position_cmd_updated_, position_cmd_init_;
   std::string frame_id_;
@@ -167,6 +171,8 @@ void NodeletControlCCTV::publishSO3Command()
                                k_q_,
                                k_w_);
 
+    viz_cctv_control();
+
     break;
   }
   case CCTV_CONTROL: {
@@ -222,11 +228,93 @@ void NodeletControlCCTV::publishSO3Command()
   so3_command_pub_.publish(so3_command);
 }
 
+void NodeletControlCCTV::viz_cctv_control(){
+  visualization_msgs::MarkerArray marker_array_msg;
+
+  geometry_msgs::Point base;
+  base.x = quad_pos_(0);
+  base.y = quad_pos_(1);
+  base.z = quad_pos_(2);
+
+  // Net desired force arrow
+  visualization_msgs::Marker force_marker_msg;
+  force_marker_msg.header.stamp = ros::Time::now();
+  force_marker_msg.header.frame_id = "simulator";
+  force_marker_msg.ns = "force_arrow";
+  force_marker_msg.type = visualization_msgs::Marker::ARROW;
+  force_marker_msg.action = visualization_msgs::Marker::ADD;
+  force_marker_msg.lifetime = ros::Duration();
+  force_marker_msg.scale.x = 0.05;   // shaft diameter
+  force_marker_msg.scale.y = 0.1;   // head diameter
+  force_marker_msg.color.r = 0.0;
+  force_marker_msg.color.g = 1.0;
+  force_marker_msg.color.b = 0.0;
+  force_marker_msg.color.a = 1.0;
+
+  const double vec_scale = 0.05;
+
+  geometry_msgs::Point force_tip;
+  const Eigen::Vector3d &cctv_force = cctv_controller_.getComputedForce();
+  force_tip.x = quad_pos_(0) + (cctv_force(0)*vec_scale);
+  force_tip.y = quad_pos_(1) + (cctv_force(1)*vec_scale);
+  force_tip.z = quad_pos_(2) + (cctv_force(2)*vec_scale);
+  force_marker_msg.points.push_back(base);
+  force_marker_msg.points.push_back(force_tip);
+
+  // Parallel component of force
+  visualization_msgs::Marker parallel_marker;
+  parallel_marker.header.stamp = ros::Time::now();
+  parallel_marker.header.frame_id = "simulator";
+  parallel_marker.ns = "parallel_marker";
+  parallel_marker.type = visualization_msgs::Marker::ARROW;
+  parallel_marker.action = visualization_msgs::Marker::ADD;
+  parallel_marker.lifetime = ros::Duration();
+  parallel_marker.scale.x = 0.05;   // shaft diameter
+  parallel_marker.scale.y = 0.1;   // head diameter
+  parallel_marker.color.r = 1.0;
+  parallel_marker.color.g = 1.0;
+  parallel_marker.color.b = 0.0;
+  parallel_marker.color.a = 1.0;
+  geometry_msgs::Point parallel_tip;
+  const Eigen::Vector3d &cctv_parallel = cctv_controller_.get_u_i_parallel();
+  parallel_tip.x = quad_pos_(0) + (cctv_parallel(0)*vec_scale);
+  parallel_tip.y = quad_pos_(1) + (cctv_parallel(1)*vec_scale);
+  parallel_tip.z = quad_pos_(2) + (cctv_parallel(2)*vec_scale);
+  parallel_marker.points.push_back(base);
+  parallel_marker.points.push_back(parallel_tip);
+
+  // Perpendicular component of force
+  visualization_msgs::Marker perpendicular_marker;
+  perpendicular_marker.header.stamp = ros::Time::now();
+  perpendicular_marker.header.frame_id = "simulator";
+  perpendicular_marker.ns = "perpendicular_marker";
+  perpendicular_marker.type = visualization_msgs::Marker::ARROW;
+  perpendicular_marker.action = visualization_msgs::Marker::ADD;
+  perpendicular_marker.lifetime = ros::Duration();
+  perpendicular_marker.scale.x = 0.05;   // shaft diameter
+  perpendicular_marker.scale.y = 0.1;   // head diameter
+  perpendicular_marker.color.r = 0.0;
+  perpendicular_marker.color.g = 0.0;
+  perpendicular_marker.color.b = 1.0;
+  perpendicular_marker.color.a = 1.0;
+  geometry_msgs::Point perpendicular_tip;
+  const Eigen::Vector3d &cctv_perpendicular = cctv_controller_.get_u_i_perpendicular();
+  perpendicular_tip.x = quad_pos_(0) + (cctv_perpendicular(0)*vec_scale);
+  perpendicular_tip.y = quad_pos_(1) + (cctv_perpendicular(1)*vec_scale);
+  perpendicular_tip.z = quad_pos_(2) + (cctv_perpendicular(2)*vec_scale);
+  perpendicular_marker.points.push_back(base);
+  perpendicular_marker.points.push_back(perpendicular_tip);
+
+
+  // Add all markers to marker array
+  marker_array_msg.markers.push_back(force_marker_msg);
+  marker_array_msg.markers.push_back(parallel_marker);
+  marker_array_msg.markers.push_back(perpendicular_marker);
+  rviz_marker_pub.publish(marker_array_msg);
+}
+
 void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPtr &pl_odom)
 {
-
-  ROS_ERROR_THROTTLE(2, "control nodelet got payload odom");
-
   pl_pos_(0)  = pl_odom->pose.pose.position.x;
   pl_pos_(1)  = pl_odom->pose.pose.position.y;
   pl_pos_(2)  = pl_odom->pose.pose.position.z;
@@ -374,11 +462,11 @@ void NodeletControlCCTV::enable_motors_callback(const std_msgs::Bool::ConstPtr &
 void NodeletControlCCTV::use_cctv_control_callback(const std_msgs::Bool::ConstPtr &msg)
 {
   if(msg->data){
-    ROS_INFO("***************************************************************************************************************************************************switching to cctv control... good luck");
+    ROS_INFO("Switching to cctv control... good luck");
     active_controller_ = CCTV_CONTROL;
   }
   else{
-    ROS_INFO("switching back to so3 control");
+    ROS_INFO("Switching back to so3 control");
     active_controller_ = SO3_CONTROL;
   }
 
@@ -479,6 +567,7 @@ void NodeletControlCCTV::onInit()
   des_alpha_0_.setZero();
 
   so3_command_pub_    = priv_nh.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
+  rviz_marker_pub     = priv_nh.advertise<visualization_msgs::MarkerArray>("cctv_controller_marker_array", 10);
 
   payload_odom_sub_   = priv_nh.subscribe("payload_odom", 10, &NodeletControlCCTV::payload_odom_callback,         this, ros::TransportHints().tcpNoDelay());
   quad_odom_sub_      = priv_nh.subscribe("quad_odom",    10, &NodeletControlCCTV::quad_odom_callback,            this, ros::TransportHints().tcpNoDelay());
