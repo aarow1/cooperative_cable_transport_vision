@@ -33,8 +33,8 @@ int main(int argc, char **argv)
     odom_msg.header.frame_id = "simulator";
 
     double t = ros::Time::now().toSec();
-    double omega_x = 0.1;
-    double omega_y = 0.2;
+    double omega_x = 0.5;
+    double omega_y = 0.25;
     double a_x = 0.5;
     double a_y = 0.5;
 
@@ -47,8 +47,12 @@ int main(int argc, char **argv)
       odom_msg.twist.twist.linear.y = a_y*omega_x*cos(omega_y*t);
       odom_msg.twist.twist.linear.z = 0;
 
-      double eul_z = 0.0; // fmod(0.1*t, 2*M_PI); // yaw
-      double eul_y = 0.0; // 0.5*sin(0.5*t); // pitch
+//      double eul_z = fmod(0.1*t, 2*M_PI); // yaw
+//      double eul_y = 0.5*sin(0.5*t); // pitch
+//      double eul_x = 0; // roll
+
+      double eul_z = 0; // yaw
+      double eul_y = 0; // pitch
       double eul_x = 0; // roll
 
       Eigen::Quaternionf pl_orientation;
@@ -104,8 +108,8 @@ void pub_marker_viz(nav_msgs::Odometry pl_msg){
   marker.lifetime = ros::Duration();
 
   // marker appearance
-  marker.scale.x = 1.0;
-  marker.scale.y = 2.0;
+  marker.scale.x = 2.0;
+  marker.scale.y = 1.0;
   marker.scale.z = 0.02;
   marker.color.r = 1.0;
   marker.color.g = 0.0;

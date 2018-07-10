@@ -13,17 +13,17 @@ echo "Takeoff..."
 rosservice call /$ROBOT/mav_services/takeoff
 sleep 0.5 
 
-read -p "Press [Enter] to go to [0, 0, 1]"
+#read -p "Press [Enter] to go to [0, 0, 1]"
 rosservice call /$ROBOT/mav_services/goTo "goal: [0.0, 0.0, 1.0, 0.0]"
 sleep 1.0
 
-read -p "Press [Enter] to go to [1, 0, 1]"
+#read -p "Press [Enter] to go to [1, 0, 1]"
 rosservice call /$ROBOT/mav_services/goTo "goal: [1.0, 0.0, 1.0, 0.0]"
 sleep 1.0
 
-read -p "Press [Enter] to go to [-1, 0, 1]"
-rosservice call /$ROBOT/mav_services/goTo "goal: [-1.0, 0.0, 1.0, 0.0]"
-sleep 1.0
+#read -p "Press [Enter] to go to [-1, 0, 1]"
+#rosservice call /$ROBOT/mav_services/goTo "goal: [-1.0, 0.0, 1.0, 0.0]"
+#sleep 1.0
 
 #read -p "Press enter to switch controller"
 #rostopic pub --once /$ROBOT/control_cctv/use_cctv_controller std_msgs/Bool 1

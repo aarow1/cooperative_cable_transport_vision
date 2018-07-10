@@ -58,6 +58,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
   ros::Subscriber use_cctv_control_sub_;
 
   ros::Publisher rviz_marker_pub;
+  ros::Publisher cable_q_pub, cable_q_dot_pub, cable_w_pub;
 
   bool position_cmd_updated_, position_cmd_init_;
   std::string frame_id_;
@@ -106,6 +107,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
   // Payload state
   Eigen::Vector3d     pl_pos_;
   Eigen::Vector3d     pl_vel_;
+  Eigen::Vector3d     pl_attach_;
   Eigen::Quaterniond  pl_orr_;
   Eigen::Vector3d     pl_omg_;
 
@@ -236,7 +238,7 @@ void NodeletControlCCTV::viz_cctv_control(){
   base.y = quad_pos_(1);
   base.z = quad_pos_(2);
 
-  // Net desired force arrow
+  // Net desired force arrow (green)
   visualization_msgs::Marker force_marker_msg;
   force_marker_msg.header.stamp = ros::Time::now();
   force_marker_msg.header.frame_id = "simulator";
@@ -261,7 +263,7 @@ void NodeletControlCCTV::viz_cctv_control(){
   force_marker_msg.points.push_back(base);
   force_marker_msg.points.push_back(force_tip);
 
-  // Parallel component of force
+  // Parallel component of force (yellow)
   visualization_msgs::Marker parallel_marker;
   parallel_marker.header.stamp = ros::Time::now();
   parallel_marker.header.frame_id = "simulator";
@@ -283,7 +285,7 @@ void NodeletControlCCTV::viz_cctv_control(){
   parallel_marker.points.push_back(base);
   parallel_marker.points.push_back(parallel_tip);
 
-  // Perpendicular component of force
+  // Perpendicular component of force (blue)
   visualization_msgs::Marker perpendicular_marker;
   perpendicular_marker.header.stamp = ros::Time::now();
   perpendicular_marker.header.frame_id = "simulator";
@@ -305,11 +307,30 @@ void NodeletControlCCTV::viz_cctv_control(){
   perpendicular_marker.points.push_back(base);
   perpendicular_marker.points.push_back(perpendicular_tip);
 
+  // attachment point
+  visualization_msgs::Marker attach_marker;
+  attach_marker.header.stamp = ros::Time::now();
+  attach_marker.header.frame_id = "simulator";
+  attach_marker.ns = "attachment_point";
+  attach_marker.type = visualization_msgs::Marker::SPHERE;
+  attach_marker.action = visualization_msgs::Marker::ADD;
+  attach_marker.lifetime = ros::Duration();
+  attach_marker.pose.position.x = pl_attach_(0);
+  attach_marker.pose.position.y = pl_attach_(1);
+  attach_marker.pose.position.z = pl_attach_(2);
+  attach_marker.scale.x = 0.1;
+  attach_marker.scale.y = 0.1;
+  attach_marker.scale.z = 0.1;
+  attach_marker.color.r = 0.0;
+  attach_marker.color.g = 0.0;
+  attach_marker.color.b = 1.0;
+  attach_marker.color.a = 1.0;
 
   // Add all markers to marker array
   marker_array_msg.markers.push_back(force_marker_msg);
   marker_array_msg.markers.push_back(parallel_marker);
   marker_array_msg.markers.push_back(perpendicular_marker);
+  marker_array_msg.markers.push_back(attach_marker);
   rviz_marker_pub.publish(marker_array_msg);
 }
 
@@ -394,6 +415,7 @@ void NodeletControlCCTV::estimate_cable_state(void){
   // 1. calculate q_i
   const Eigen::Matrix3d R_pl_0 = pl_orr_.normalized().toRotationMatrix();
   const Eigen::Vector3d p_attach_0 = pl_pos_ + (R_pl_0 * rho_i_);
+  pl_attach_ = p_attach_0;
   const Eigen::Vector3d p_attach_quad = (p_attach_0 - quad_pos_);
   if(p_attach_quad.norm() > 0.01){
     cable_q_ = p_attach_quad.normalized();
@@ -405,22 +427,22 @@ void NodeletControlCCTV::estimate_cable_state(void){
   const Eigen::Vector3d v_attach_quad = v_attach_0 - quad_vel_;
   cable_q_dot_ = v_attach_quad / cable_length_;
 
-  ROS_WARN_THROTTLE(1, "nodelet pl_omg_: [%2.2f, %2.2f, %2.2f]",
-                    pl_omg_(0),
-                    pl_omg_(1),
-                    pl_omg_(2));
-  ROS_WARN_THROTTLE(1, "nodelet v_attach_0: [%2.2f, %2.2f, %2.2f]",
-                    v_attach_0(0),
-                    v_attach_0(1),
-                    v_attach_0(2));
-  ROS_WARN_THROTTLE(1, "nodelet quad_vel_: [%2.2f, %2.2f, %2.2f]",
-                    quad_vel_(0),
-                    quad_vel_(1),
-                    quad_vel_(2));
-  ROS_WARN_THROTTLE(1, "nodelet v_attach_quad: [%2.2f, %2.2f, %2.2f]",
-                    v_attach_quad(0),
-                    v_attach_quad(1),
-                    v_attach_quad(2));
+//  ROS_WARN_THROTTLE(1, "nodelet pl_omg_: [%2.2f, %2.2f, %2.2f]",
+//                    pl_omg_(0),
+//                    pl_omg_(1),
+//                    pl_omg_(2));
+//  ROS_WARN_THROTTLE(1, "nodelet v_attach_0: [%2.2f, %2.2f, %2.2f]",
+//                    v_attach_0(0),
+//                    v_attach_0(1),
+//                    v_attach_0(2));
+//  ROS_WARN_THROTTLE(1, "nodelet quad_vel_: [%2.2f, %2.2f, %2.2f]",
+//                    quad_vel_(0),
+//                    quad_vel_(1),
+//                    quad_vel_(2));
+//  ROS_WARN_THROTTLE(1, "nodelet v_attach_quad: [%2.2f, %2.2f, %2.2f]",
+//                    v_attach_quad(0),
+//                    v_attach_quad(1),
+//                    v_attach_quad(2));
 
   // 3. calculate w_i (yikes)
   cable_w_ = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
@@ -428,6 +450,32 @@ void NodeletControlCCTV::estimate_cable_state(void){
   cctv_controller_.set_q_i(cable_q_);
   cctv_controller_.set_q_i_dot(cable_q_dot_);
   cctv_controller_.set_w_i(cable_w_);
+
+  // publish cable state for debug
+  geometry_msgs::Vector3Stamped cable_q_msg;
+  cable_q_msg.header.stamp = ros::Time::now();
+  cable_q_msg.header.frame_id = frame_id_;
+  cable_q_msg.vector.x = cable_q_(0);
+  cable_q_msg.vector.y = cable_q_(1);
+  cable_q_msg.vector.z = cable_q_(2);
+  cable_q_pub.publish(cable_q_msg);
+
+  geometry_msgs::Vector3Stamped cable_q_dot_msg;
+  cable_q_dot_msg.header.stamp = ros::Time::now();
+  cable_q_dot_msg.header.frame_id = frame_id_;
+  cable_q_dot_msg.vector.x = cable_q_dot_(0);
+  cable_q_dot_msg.vector.y = cable_q_dot_(1);
+  cable_q_dot_msg.vector.z = cable_q_dot_(2);
+  cable_q_dot_pub.publish(cable_q_dot_msg);
+
+  geometry_msgs::Vector3Stamped cable_w_msg;
+  cable_w_msg.header.stamp = ros::Time::now();
+  cable_w_msg.header.frame_id = frame_id_;
+  cable_w_msg.vector.x = cable_w_(0);
+  cable_w_msg.vector.y = cable_w_(1);
+  cable_w_msg.vector.z = cable_w_(2);
+  cable_w_pub.publish(cable_w_msg);
+
 }
 
 void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd)
@@ -560,6 +608,7 @@ void NodeletControlCCTV::onInit()
   // Set cctv_controller des to zero TODO not this
 
   des_pos_0_.setZero();
+  des_pos_0_(2) = 0.1;
   des_vel_0_.setZero();
   des_acc_0_.setZero();
   des_R_0_.setIdentity();
@@ -568,6 +617,9 @@ void NodeletControlCCTV::onInit()
 
   so3_command_pub_    = priv_nh.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
   rviz_marker_pub     = priv_nh.advertise<visualization_msgs::MarkerArray>("cctv_controller_marker_array", 10);
+  cable_q_pub         = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_q", 10);
+  cable_q_dot_pub     = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_q_dot", 10);
+  cable_w_pub         = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_w", 10);
 
   payload_odom_sub_   = priv_nh.subscribe("payload_odom", 10, &NodeletControlCCTV::payload_odom_callback,         this, ros::TransportHints().tcpNoDelay());
   quad_odom_sub_      = priv_nh.subscribe("quad_odom",    10, &NodeletControlCCTV::quad_odom_callback,            this, ros::TransportHints().tcpNoDelay());
