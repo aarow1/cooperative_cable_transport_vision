@@ -4,7 +4,7 @@
 <arg name="mass" default="0.5"/>
 <arg name="start_nodelet_manager" default="1"/>
 <arg name="nodelet_manager_name" default="nodelet_manager_control"/>
-<arg name="rviz" default="0"/>
+<arg name="rviz" default="1"/>
 
   <!--rviz
    -->
