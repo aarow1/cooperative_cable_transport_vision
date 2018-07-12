@@ -2,7 +2,7 @@
 
   <arg name="robot_name" default="dragonfly11"/>
   <arg name="mass" default="0.250"/>
-	<arg name="vicon" default="0"/>
+  <arg name="vicon" default="1"/>
 	<arg name="vicon_fps" default="100"/>
 	<arg name="start_nodelet_manager" default="1"/>
 	<arg name="nodelet_manager_name" default="nodelet_manager_control"/>
@@ -74,29 +74,29 @@
 	      <remap from="~motors" to="motors"/>
       </node>
 
-	    <group unless="$(arg vicon)">
-		    <!-- Encode Messages -->
-		    <node pkg="nodelet"
-		      type="nodelet"
-		      name="quad_encode_msg"
-		      args="load quad_encode_msg/QuadEncodeMsg standalone_nodelet"
-		      output="screen"
-		      unless="$(arg sim)">
-		      <remap from="~so3_cmd" to="so3_cmd"/>
-		      <remap from="~serial_msg" to="to_robot"/>
-		    </node>
+      <node pkg="nodelet"
+        type="nodelet"
+        name="quad_encode_msg"
+        args="load quad_encode_msg/QuadEncodeMsg standalone_nodelet"
+        output="screen"
+        unless="$(arg sim)">
+        <remap from="~so3_cmd" to="so3_cmd"/>
+        <remap from="~serial_msg" to="to_robot"/>
+      </node>
 
-	    	<node pkg="nodelet"
-	    		type="nodelet"
-		      	args="standalone qualcomm_interface/SO3CmdToQualcomm"
-		      	name="so3cmd_to_qualcomm_nodelet"
-		      	required="true"
-		      	clear_params="true"
-		      	output="screen"
-		      	unless="$(arg sim)">
-		      	<remap from="~odom" to="$(arg odotopic)"/>
-		      	<remap from="~so3_cmd" to="so3_cmd"/>
-		    </node>
+      <node pkg="nodelet"
+        type="nodelet"
+          args="standalone qualcomm_interface/SO3CmdToQualcomm"
+          name="so3cmd_to_qualcomm_nodelet"
+          required="true"
+          clear_params="true"
+          output="screen"
+          unless="$(arg sim)">
+          <remap from="~odom" to="$(arg odotopic)"/>
+          <remap from="~so3_cmd" to="so3_cmd"/>
+      </node>
+
+	    <group unless="$(arg vicon)">
 
 		    <node pkg="vio_qc"
 	    	    type="MVSampleVISLAMEagle"
