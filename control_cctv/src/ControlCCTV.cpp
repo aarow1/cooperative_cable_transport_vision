@@ -106,13 +106,17 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   double dt = (ros::Time::now() - t_last_control).toSec();
   t_last_control = ros::Time::now();
 
+  //==============================================================================================//
+  // Payload Control Wrench                                                                       //
+  //==============================================================================================//
+
   // Payload errors
   const Vector3d e_pos_0     = pos_0_ - des_pos_0;
   const Vector3d e_vel_0     = vel_0_ - des_vel_0;
   const Vector3d e_R_0       = 0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
   const Vector3d e_Omega_0   = Omega_0_ - (R_0_.transpose() * des_R_0 * des_Omega_0);
 
-  // Calculate payload force and moment (eq. 20, 21) TODO: add integral terms
+  // Payload force and moment (eq. 20, 21) TODO: add integral terms
   const Vector3d F_0_des = m_0_ * (
           (-1.0 * k_pos_0 * e_pos_0)  // P control
         + (-1.0 * k_vel_0 * e_vel_0)  // D control
@@ -134,22 +138,27 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   for (int i = 0; i < n_bots_; i++){
     diagonal_R_0.block<3,3>(3*i, 3*i) = R_0_;
   }
-
   Matrix<double, 6, 1> control_0_des;         // Payload control wrench
   control_0_des.block<3,1>(0,0) = R_0_.transpose() * F_0_des;
   control_0_des.block<3,1>(3,0) = M_0_des_;
-
   const Matrix<double, 9,1> mu_des = diagonal_R_0 * P_inv_ * control_0_des;
 
   // Extract my virtual control input
-  const Vector3d mu_i_des = mu_des.block<3,1>(3*idx_, 0);   // Ideal cable force
-  const Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des; // Ideal cable force projected onto cable direction
+  Vector3d mu_i_des = mu_des.block<3,1>(3*idx_, 0);   // Ideal cable force
+  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des; // Ideal cable force projected onto cable direction
+
+  //=====================================//
+  // Single UAV Payload Control Override //
+  mu_i_des = F_0_des;
+  mu_i = q_i_ * q_i_.transpose() * mu_i_des;
+  //=====================================//
+
+
   // Calculate Attachment point acceleration (eq. 16)
   const Vector3d a_i = (des_acc_0)
       + (g_ * Vector3d::UnitZ())
       + (R_0_ * VIOUtil::getSkew(Omega_0_) * VIOUtil::getSkew(Omega_0_) * rho_.block<3,1>(0,idx_))
       - (R_0_ * VIOUtil::getSkew(rho_.block<3,1>(0,idx_)) * des_alpha_0);
-
 
   // Parallel component of control (eq. 17)
   u_i_parallel = mu_i
