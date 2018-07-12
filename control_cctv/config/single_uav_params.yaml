@@ -1,10 +1,11 @@
+#SO3 Controller gains
 gains:
-  pos: {x: 1.8, y: 1.8, z: 3.0}
-  vel: {x: 0.6, y: 0.6, z: 1.7}
+  pos: {x: 7.4, y: 7.4, z: 10.4}
+  vel: {x: 4.8, y: 4.8, z: 6.0}
+  ki:  {x: 0.00, y: 0.00, z: 0.00}
+  kib: {x: 0.00, y: 0.00, z: 0.00}
   rot: {x: 1.5, y: 1.5, z: 1.0}
   ang: {x: 0.13, y: 0.13, z: 0.1}
-  ki:  {x: 0.00, y: 0.001, z: 0.008}
-  kib: {x: 0.00, y: 0.00, z: 0.00}
 
 corrections:
   kf: 0.0e-08
@@ -14,9 +15,9 @@ corrections:
 max_pos_int:   0.5
 max_pos_int_b: 0.5
 
-number_of_robots: 3
+number_of_robots: 1
 
-quadrotor_name: dragonfly11
+quadrotor_name: dragonfly1
 mass: 0.5
 payload_mass: 0.5
 cable_length: 1.0

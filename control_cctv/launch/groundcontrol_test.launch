@@ -1,0 +1,27 @@
+<launch>
+
+	<!-- Master Sync Stuff -->
+    <node pkg="master_discovery_fkie" type="master_discovery" name="master_discovery">
+	    <param name="mcast_group" value="224.0.0.1" />
+    </node>
+
+    <node pkg="master_sync_fkie" type="master_sync" name="multimaster_client_sync">
+      	<rosparam file="$(find control_cctv)/config/multimaster_params.yaml" />
+    </node>
+
+    <node pkg="mocap_vicon"
+      type="mocap_vicon_node"
+      name="vicon"
+      output="screen">
+      <param name="server_address" value="mocap"/>
+      <param name="frame_rate" value="100"/>
+      <param name="max_accel" value="10.0"/>
+      <param name="publish_tf" value="false"/>
+      <param name="fixed_frame_id" value="mocap"/>
+      <rosparam param="model_list">
+        ["dragonfly11"]
+      </rosparam>
+      <remap from="vicon/dragonfly/odom" to="/dragonfly11/vicon_odom"/>
+</node>
+
+</launch>
