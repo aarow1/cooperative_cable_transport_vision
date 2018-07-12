@@ -19,7 +19,7 @@
       <param name="publish_tf" value="false"/>
       <param name="fixed_frame_id" value="mocap"/>
       <rosparam param="model_list">
-        ["dragonfly11"]
+        ["dragonfly11", "pl11"]
       </rosparam>
 </node>
 
