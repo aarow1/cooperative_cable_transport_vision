@@ -1,3 +1,4 @@
-sync_topics: ['/vicon/dragonfly11/odom']
+sync_topics: ['/vicon/dragonfly11/odom',
+  '/vicon/pl11/odom']
 ignore_nodes: ['']
 ignore_services: ['']
