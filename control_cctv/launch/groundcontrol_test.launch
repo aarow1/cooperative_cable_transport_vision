@@ -21,7 +21,6 @@
       <rosparam param="model_list">
         ["dragonfly11"]
       </rosparam>
-      <remap from="vicon/dragonfly/odom" to="/dragonfly11/vicon_odom"/>
 </node>
 
 </launch>
