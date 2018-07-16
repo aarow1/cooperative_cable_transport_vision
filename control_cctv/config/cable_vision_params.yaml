@@ -3,7 +3,7 @@ gains:
   vel: {x: 0.6, y: 0.6, z: 1.7}
   rot: {x: 1.5, y: 1.5, z: 1.0}
   ang: {x: 0.13, y: 0.13, z: 0.1}
-  ki:  {x: 0.00, y: 0.001, z: 0.01}
+  ki:  {x: 0.00, y: 0.001, z: 0.1}
   kib: {x: 0.00, y: 0.00, z: 0.00}
 
 corrections:
@@ -17,12 +17,13 @@ max_pos_int_b: 0.5
 number_of_robots: 1
 
 quadrotor_name: dragonfly11
-mass: 0.233
-payload_mass: 0.085
+mass: 0.250
+robot_mass: 0.250
+payload_mass: 0.150
 cable_length: 0.5
 my_index: 0
 
-k_pos_0: 0.5
+k_pos_0: 7.0 
 k_vel_0: 0.0
 k_R_0: 0.0
 k_Omega_0: 0.0
