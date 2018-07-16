@@ -124,33 +124,33 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
         + (g_ * Vector3d::UnitZ())    // Gravity Compensation
         );
 
-  const Vector3d M_0_des_ =
-        (-1.0 * k_R_0     * e_R_0)
-      + (-1.0 * k_Omega_0 * e_Omega_0)
-      + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
-      * (J_0_ * R_0_.transpose() * des_R_0 * des_Omega_0)
-      + (J_0_ * R_0_.transpose() * des_R_0 * des_alpha_0);
+//  const Vector3d M_0_des_ =
+//        (-1.0 * k_R_0     * e_R_0)
+//      + (-1.0 * k_Omega_0 * e_Omega_0)
+//      + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
+//      * (J_0_ * R_0_.transpose() * des_R_0 * des_Omega_0)
+//      + (J_0_ * R_0_.transpose() * des_R_0 * des_alpha_0);
 
-  // Calculate desired virtual controls (eq. 23)
-  MatrixXd diagonal_R_0;                      // Matrix with R_0 on the diagonals
-  diagonal_R_0.resize(3*n_bots_, 3*n_bots_);
-  diagonal_R_0.setZero();
-  for (int i = 0; i < n_bots_; i++){
-    diagonal_R_0.block<3,3>(3*i, 3*i) = R_0_;
-  }
-  Matrix<double, 6, 1> control_0_des;         // Payload control wrench
-  control_0_des.block<3,1>(0,0) = R_0_.transpose() * F_0_des;
-  control_0_des.block<3,1>(3,0) = M_0_des_;
-  const Matrix<double, 9,1> mu_des = diagonal_R_0 * P_inv_ * control_0_des;
+//  // Calculate desired virtual controls (eq. 23)
+//  MatrixXd diagonal_R_0;                      // Matrix with R_0 on the diagonals
+//  diagonal_R_0.resize(3*n_bots_, 3*n_bots_);
+//  diagonal_R_0.setZero();
+//  for (int i = 0; i < n_bots_; i++){
+//    diagonal_R_0.block<3,3>(3*i, 3*i) = R_0_;
+//  }
+//  Matrix<double, 6, 1> control_0_des;         // Payload control wrench
+//  control_0_des.block<3,1>(0,0) = R_0_.transpose() * F_0_des;
+//  control_0_des.block<3,1>(3,0) = M_0_des_;
+//  const Matrix<double, 9,1> mu_des = diagonal_R_0 * P_inv_ * control_0_des;
 
-  // Extract my virtual control input
-  Vector3d mu_i_des = mu_des.block<3,1>(3*idx_, 0);   // Ideal cable force
-  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des; // Ideal cable force projected onto cable direction
+//  // Extract my virtual control input
+//  Vector3d mu_i_des = mu_des.block<3,1>(3*idx_, 0);   // Ideal cable force
+//  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des; // Ideal cable force projected onto cable direction
 
   //=====================================//
   // Single UAV Payload Control Override //
-  mu_i_des = F_0_des;
-  mu_i = q_i_ * q_i_.transpose() * mu_i_des;
+  Vector3d mu_i_des = F_0_des;
+  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des;
   //=====================================//
 
 
@@ -209,7 +209,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   u_i_perpendicular = (m_i_ * l_i_ * q_i_hat) * (
           (-1.0 * k_q *e_q_i)             // P control
         + (-1.0 * k_w *e_w_i)             // D control
-        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
+//        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
 //        - (q_i_hat_2 *w_i_des_dot)      // sketchy double derivative
          );
         - (m_i_ * q_i_hat_2 * a_i);       //TODO: add delta term here, equation 27
