@@ -246,7 +246,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 //  ROS_WARN_THROTTLE(1, "e_vel_0: [%2.2f, %2.2f, %2.2f]", e_vel_0(0), e_vel_0(1), e_vel_0(2));
 //  ROS_WARN_THROTTLE(1, "e_R_0: [%2.2f, %2.2f, %2.2f]", e_R_0(0), e_R_0(1), e_R_0(2));
 //  ROS_WARN_THROTTLE(1, "e_Omega_0: [%2.2f, %2.2f, %2.2f]", e_Omega_0(0), e_Omega_0(1), e_Omega_0(2));
-//  ROS_WARN_THROTTLE(1, "controller a_i = [%2.2f, %2.2f, %2.2f]", a_i(0), a_i(1), a_i(2));
+  ROS_WARN_THROTTLE(t_db, "controller a_i = [%2.2f, %2.2f, %2.2f]", a_i(0), a_i(1), a_i(2));
 //  ROS_WARN_THROTTLE(1, "w_i_: [%2.2f, %2.2f, %2.2f]", w_i_(0), w_i_(1), w_i_(2));
 //  ROS_WARN_THROTTLE(1, "u_i_parallel: [%2.2f, %2.2f, %2.2f]", u_i_parallel(0), u_i_parallel(1), u_i_parallel(2));
 //  ROS_WARN_THROTTLE(t_db, "========================================");
@@ -279,8 +279,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 //  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(0,0), perp_db(0,1), perp_db(0,2));
 //  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(1,0), perp_db(1,1), perp_db(1,2));
 //  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(2,0), perp_db(2,1), perp_db(2,2));
-//  ROS_WARN_THROTTLE(1, "u_i_parallel: [%2.2f, %2.2f, %2.2f]", u_i_parallel(0), u_i_parallel(1), u_i_parallel(2));
-//  ROS_WARN_THROTTLE(1, "u_i_perpendicular: [%2.2f, %2.2f, %2.2f]", u_i_perpendicular(0), u_i_perpendicular(1), u_i_perpendicular(2));
+  ROS_WARN_THROTTLE(t_db, u_i_parallel: [%2.2f, %2.2f, %2.2f]", u_i_parallel(0), u_i_parallel(1), u_i_parallel(2));
+  ROS_WARN_THROTTLE(t_db, "u_i_perpendicular: [%2.2f, %2.2f, %2.2f]", u_i_perpendicular(0), u_i_perpendicular(1), u_i_perpendicular(2));
 //  ROS_WARN_THROTTLE(1, "u_i_: [%2.2f, %2.2f, %2.2f]", u_i_(0), u_i_(1), u_i_(2));
 
   ROS_ERROR_COND(std::isnan(orientation_.x()), "ORIENTATION x IS NAN");

@@ -1,40 +1,34 @@
 #!/bin/bash
 
-ROBOT="quadrotor"
+ROBOT="dragonfly11"
 
 echo "testing control_cctv functionality"
 
-read -rsp "turn motors ON" -n1
+read -p "turn motors ON"
 rosservice call /$ROBOT/mav_services/motors true
 
-read -rsp "takeoff" -n1
+read -p "takeoff"
 echo "Takeoff..."
 rosservice call /$ROBOT/mav_services/takeoff
 
-read -rsp "go to 0 0 1" -n1
-rosservice call /$ROBOT/mav_services/goTo "goal: [0.0, 0.0, 1.0, 0.0]"
+read -p "go to 5 0 1"
+rosservice call /$ROBOT/mav_services/goTo "goal: [5.0, 0.0, 1.0, 0.0]"
 
-#read -rsp "go to 4 0 1" -n1
-#rosservice call /$ROBOT/mav_services/goTo "goal: [4.0, 0.0, 1.0, 0.0]"
+read -p "go to 5 0 1.5"
+rosservice call /$ROBOT/mav_services/goTo "goal: [5.0, 0.0, 1.5, 0.0]"
 
-#read -rsp "set desired payload to 4, 0, 0.5" -n1
-#rostopic pub /dragonfly11/control_cctv/payload_cmd geometry_msgs/Pose "position:
-#  x: 4.0
-#  y: 0.0
-#  z: 0.5
-#orientation:
-#  x: 0.0
-#  y: 0.0
-#  z: 0.0
-#  w: 1.0"
+read -p "set desired payload to 5, 0, 0.5"
+rostopic pub -1 /dragonfly11/control_cctv/payload_cmd geometry_msgs/Pose '{position: {x: 5.0, y: 0.0, z: 0.5}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}'
+
+read -p "Press enter to switch controller"
+rostopic pub -1 /$ROBOT/control_cctv/use_cctv_controller std_msgs/Bool 1
+
+read -p "set desired payload to 5, 0, 1.0"
+rostopic pub -1 /dragonfly11/control_cctv/payload_cmd geometry_msgs/Pose '{position: {x: 5.0, y: 0.0, z: 1.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}'
 
 
-read -rsp "Press enter to switch controller" -n1
-rostopic pub --once /$ROBOT/control_cctv/use_cctv_controller std_msgs/Bool 1
+read -p "set desired payload to 5, 0, 0.0"
+rostopic pub -1 /dragonfly11/control_cctv/payload_cmd geometry_msgs/Pose '{position: {x: 5.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}'
 
-read -rsp "Press [Enter] to land" -n1
-rosservice call /$ROBOT/mav_services/land
-sleep 1
-
-read -rsp "Press [Enter] to turn off motors" -n1
+read -p "Press [Enter] to turn off motors"
 rosservice call /$ROBOT/mav_services/motors 0

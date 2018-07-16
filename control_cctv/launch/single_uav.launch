@@ -1,7 +1,6 @@
 <launch>
 
   <arg name="robot_name" default="dragonfly11"/>
-  <arg name="mass" default="0.350"/>
   <arg name="vicon" default="1"/>
 	<arg name="vicon_fps" default="100"/>
 	<arg name="start_nodelet_manager" default="1"/>
