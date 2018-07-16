@@ -7,7 +7,7 @@
 	<arg name="start_nodelet_manager" default="1"/>
 	<arg name="nodelet_manager_name" default="nodelet_manager_control"/>
   <arg name="sim" default="0"/>
-  <arg name="odotopic" value="/$(arg robot_name)/quadrotor_ukf/control_odom" unless="$(arg vicon)"/>
+  <arg name="odotopic" value="/vicon/$(arg robot_name)/odom" if="$(arg vicon)"/>
   <arg name="odotopic" value="/$(arg robot_name)/quadrotor_ukf/control_odom" unless="$(arg vicon)"/>
   <arg name="pl_odom_topic" value="/vicon/pl11/odom" if="$(arg vicon)"/>
 
