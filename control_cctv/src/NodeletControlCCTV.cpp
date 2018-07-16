@@ -39,6 +39,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
  private:
   void publishSO3Command(); // Still publish so3commands to attitude controller
   void position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd);
+  void payload_cmd_callback (const geometry_msgs::Pose::ConstPtr &payload_cmd);
   void payload_odom_callback(const nav_msgs::Odometry::ConstPtr &pl_odom);
   void quad_odom_callback(const nav_msgs::Odometry::ConstPtr &quad_odom);
   void enable_motors_callback(const std_msgs::Bool::ConstPtr &msg);
@@ -66,6 +67,8 @@ class NodeletControlCCTV : public nodelet::Nodelet
   //Robot desired state (so3 controller)
   Eigen::Vector3d des_pos_, des_vel_, des_acc_, des_jrk_;
   double des_yaw_, des_yaw_dot_;
+
+  ros::Subscriber payload_cmd_sub_;
 
   //SO3 controller gains
   Eigen::Vector3d kx_, kv_, ki_, kib_;
@@ -495,6 +498,17 @@ void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCom
   publishSO3Command();
 }
 
+void NodeletControlCCTV::payload_cmd_callback(const geometry_msgs::Pose::ConstPtr &payload_cmd)
+{
+  des_pos_0_ = Eigen::Vector3d(payload_cmd->position.x, payload_cmd->position.x, payload_cmd->position.x);
+  Eigen::Quaterniond cmd_quaternion = Eigen::Quaterniond(payload_cmd->orientation.x,
+                                      payload_cmd->orientation.y,
+                                      payload_cmd->orientation.z,
+                                      payload_cmd->orientation.w);
+  des_R_0_ = cmd_quaternion.normalized().toRotationMatrix();
+}
+
+
 void NodeletControlCCTV::enable_motors_callback(const std_msgs::Bool::ConstPtr &msg)
 {
   if(msg->data)
@@ -626,6 +640,7 @@ void NodeletControlCCTV::onInit()
   position_cmd_sub_   = priv_nh.subscribe("position_cmd", 10, &NodeletControlCCTV::position_cmd_callback,         this, ros::TransportHints().tcpNoDelay());
   enable_motors_sub_  = priv_nh.subscribe("motors",       2,  &NodeletControlCCTV::enable_motors_callback,        this, ros::TransportHints().tcpNoDelay());
   corrections_sub_    = priv_nh.subscribe("corrections",  10, &NodeletControlCCTV::corrections_callback,          this, ros::TransportHints().tcpNoDelay());
+  payload_cmd_sub_    = priv_nh.subscribe("payload_cmd",  10, &NodeletControlCCTV::payload_cmd_callback,          this, ros::TransportHints().tcpNoDelay());
 
   use_cctv_control_sub_ = priv_nh.subscribe("use_cctv_controller", 10, &NodeletControlCCTV::use_cctv_control_callback, this);
 
