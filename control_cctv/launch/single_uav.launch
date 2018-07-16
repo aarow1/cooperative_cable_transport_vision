@@ -53,7 +53,7 @@
 	      output="screen">
 	      <rosparam file="$(find trackers_manager)/config/trackers.yaml"/>
 	      <rosparam file="$(find trackers_manager)/config/tracker_params.yaml"/>
-	      <rosparam file="$(find so3_control)/config/gains.yaml"/>
+        <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
         <remap from="~odom" to="$(arg odotopic)"/>
 	      <remap from="~cmd" to="position_cmd"/>
 	    </node>
@@ -74,6 +74,7 @@
 	      <remap from="~motors" to="motors"/>
       </node>
 
+  <group unless="$(arg sim)">
       <node pkg="nodelet"
         type="nodelet"
         name="quad_encode_msg"
@@ -120,5 +121,6 @@
             args="messages $(arg odotopic) 10 odom_throttled">
         </node>
 	    </group>
-	</group>
+    </group>
+  </group>
 </launch>
