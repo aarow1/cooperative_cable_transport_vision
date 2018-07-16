@@ -8,7 +8,8 @@
 	<arg name="nodelet_manager_name" default="nodelet_manager_control"/>
   <arg name="sim" default="0"/>
   <arg name="odotopic" value="/$(arg robot_name)/quadrotor_ukf/control_odom" unless="$(arg vicon)"/>
-  <arg name="odotopic" value="/vicon/$(arg robot_name)/odom" if="$(arg vicon)"/>
+  <arg name="odotopic" value="/$(arg robot_name)/quadrotor_ukf/control_odom" unless="$(arg vicon)"/>
+  <arg name="pl_odom_topic" value="/vicon/pl11/odom" if="$(arg vicon)"/>
 
     <group ns="$(arg robot_name)">
 
@@ -67,7 +68,7 @@
 	      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
 	      <param name="mass" value="$(arg mass)"/>
         <remap from="~quad_odom" to="$(arg odotopic)"/>
-	      <remap from="~payload_odom" to="pl_pose"/>
+        <remap from="~payload_odom" to="$(arg pl_odom_topic)"/>
 	      <remap from="~position_cmd" to="position_cmd"/>
 	      <remap from="~so3_cmd" to="so3_cmd"/>
 	      <remap from="~motors" to="motors"/>
