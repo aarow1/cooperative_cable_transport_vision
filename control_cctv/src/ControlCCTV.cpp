@@ -218,7 +218,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   const Matrix3d perp_db = (m_i_ * l_i_ * q_i_hat);
   force_ = u_i_;
   for(int i = 0; i<3; i++){
-    if (std::isnan(force_(i))) ROS_ERROR("FORCE HAS A NAN");
+    //if (std::isnan(force_(i))) ROS_ERROR("FORCE HAS A NAN");
   }
 
   // Taken directly from SO3Control, skipped angular velocity
