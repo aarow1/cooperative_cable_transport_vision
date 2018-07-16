@@ -14,23 +14,23 @@ corrections:
 max_pos_int:   0.5
 max_pos_int_b: 0.5
 
-number_of_robots: 3
+number_of_robots: 1
 
 quadrotor_name: dragonfly11
-mass: 0.5
-payload_mass: 0.5
-cable_length: 1.0
+mass: 0.233
+payload_mass: 0.085
+cable_length: 0.5
 my_index: 0
 
-k_pos_0: 5.0
-k_vel_0: 5.0
-k_R_0: 1.0
-k_Omega_0: 1.0
-k_q: 10.0
+k_pos_0: 0.5
+k_vel_0: 0.0
+k_R_0: 0.0
+k_Omega_0: 0.0
+k_q: 0.0
 k_w: 0.0
 
 
 attachment:
-  rho_0: {x: 1.000, y: 0.000, z: 0.000}
-  rho_1: {x: -0.500, y: 0.866, z: 0.000}
-  rho_2: {x: -0.500, y: -0.866, z: 0.000}
+  rho_0: {x: 0.000, y: 0.000, z: 0.000}
+  #rho_1: {x: -0.500, y: 0.866, z: 0.000}
+  #rho_2: {x: -0.500, y: -0.866, z: 0.000}

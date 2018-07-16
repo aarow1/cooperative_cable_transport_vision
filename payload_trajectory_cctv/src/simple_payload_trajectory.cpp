@@ -33,10 +33,10 @@ int main(int argc, char **argv)
     odom_msg.header.frame_id = "simulator";
 
     double t = ros::Time::now().toSec();
-    double omega_x = 0.5;
-    double omega_y = 0.25;
-    double a_x = 0.5;
-    double a_y = 0.5;
+    double omega_x = 0.0;
+    double omega_y = 0.0;
+    double a_x = 0.0;
+    double a_y = 0.0;
 
     if (MOVE){
       odom_msg.pose.pose.position.x = a_x*sin(omega_x * t);
