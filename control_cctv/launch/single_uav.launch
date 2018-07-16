@@ -1,6 +1,7 @@
 <launch>
 
   <arg name="robot_name" default="dragonfly11"/>
+  <arg name="mass" default="0.250"/>
   <arg name="vicon" default="1"/>
 	<arg name="vicon_fps" default="100"/>
 	<arg name="start_nodelet_manager" default="1"/>
@@ -29,8 +30,7 @@
 	      args="manager"
 	      output="screen"
         if="$(arg start_nodelet_manager)">
-        <rosparam file="$(find mav_manager)/config/mav_manager_params.yaml" />
-      </node>
+        <rosparam file="$(find mav_manager)/config/mav_manager_params.yaml" /> </node>
 
 	    <!-- MAV Manager -->
 	    <node pkg="mav_manager"
