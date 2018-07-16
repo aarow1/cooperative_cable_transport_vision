@@ -23,11 +23,11 @@ payload_mass: 0.025
 cable_length: 0.5
 my_index: 0
 
-k_pos_0: 7.0 
+k_pos_0: 0.5
 k_vel_0: 0.0
 k_R_0: 0.0
 k_Omega_0: 0.0
-k_q: 1.0
+k_q: 0.5
 k_w: 0.0
 
 
