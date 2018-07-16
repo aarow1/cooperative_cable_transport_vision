@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROBOT="dragonfly11"
+ROBOT="quadrotor"
 
 echo "testing control_cctv functionality"
 
@@ -11,22 +11,22 @@ read -rsp "takeoff" -n1
 echo "Takeoff..."
 rosservice call /$ROBOT/mav_services/takeoff
 
-read -rsp "go to 0 0 1"
+read -rsp "go to 0 0 1" -n1
 rosservice call /$ROBOT/mav_services/goTo "goal: [0.0, 0.0, 1.0, 0.0]"
 
-read -rsp "go to 4 0 1"
-rosservice call /$ROBOT/mav_services/goTo "goal: [4.0, 0.0, 1.0, 0.0]"
+#read -rsp "go to 4 0 1" -n1
+#rosservice call /$ROBOT/mav_services/goTo "goal: [4.0, 0.0, 1.0, 0.0]"
 
-read -rsp "set desired payload to 4, 0, 0.5" -n1
-rostopic pub /dragonfly11/control_cctv/payload_cmd geometry_msgs/Pose "position:
-  x: 4.0
-  y: 0.0
-  z: 0.5
-orientation:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  w: 1.0"
+#read -rsp "set desired payload to 4, 0, 0.5" -n1
+#rostopic pub /dragonfly11/control_cctv/payload_cmd geometry_msgs/Pose "position:
+#  x: 4.0
+#  y: 0.0
+#  z: 0.5
+#orientation:
+#  x: 0.0
+#  y: 0.0
+#  z: 0.0
+#  w: 1.0"
 
 
 read -rsp "Press enter to switch controller" -n1
