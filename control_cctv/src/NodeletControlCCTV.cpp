@@ -506,6 +506,7 @@ void NodeletControlCCTV::payload_cmd_callback(const geometry_msgs::Pose::ConstPt
                                       payload_cmd->orientation.z,
                                       payload_cmd->orientation.w);
   des_R_0_ = cmd_quaternion.normalized().toRotationMatrix();
+  ROS_INFO("~~~got new payload command position~~~~");
 }
 
 
