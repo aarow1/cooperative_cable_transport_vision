@@ -30,6 +30,8 @@ k_Omega_0: 0.0
 k_q: 0.02
 k_w: 0.0
 
+pl_vel_lowpass_alpha: 0.1
+pl_vel_jumpmax: 0.5
 
 attachment:
   rho_0: {x: 0.000, y: 0.000, z: 0.000}

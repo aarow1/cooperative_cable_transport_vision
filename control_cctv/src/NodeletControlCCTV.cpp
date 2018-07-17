@@ -59,7 +59,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
   ros::Subscriber use_cctv_control_sub_;
 
   ros::Publisher rviz_marker_pub;
-  ros::Publisher cable_q_pub, cable_q_dot_pub, cable_w_pub;
+  ros::Publisher cable_q_pub, cable_q_dot_pub, cable_w_pub, payload_vel_pub;
 
   bool position_cmd_updated_, position_cmd_init_;
   std::string frame_id_;
@@ -113,6 +113,10 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d     pl_attach_;
   Eigen::Quaterniond  pl_orr_;
   Eigen::Vector3d     pl_omg_;
+
+  // Filter constants
+  double pl_vel_lowpass_alpha;
+  double pl_vel_jumpmax;
 
   enum Controller {SO3_CONTROL, CCTV_CONTROL};
   Controller active_controller_ = SO3_CONTROL;
@@ -176,7 +180,7 @@ void NodeletControlCCTV::publishSO3Command()
                                k_q_,
                                k_w_);
 
-    viz_cctv_control();
+//    viz_cctv_control();
 
     break;
   }
@@ -342,9 +346,6 @@ void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPt
   pl_pos_(0)  = pl_odom->pose.pose.position.x;
   pl_pos_(1)  = pl_odom->pose.pose.position.y;
   pl_pos_(2)  = pl_odom->pose.pose.position.z;
-  pl_vel_(0)  = pl_odom->twist.twist.linear.x;
-  pl_vel_(1)  = pl_odom->twist.twist.linear.y;
-  pl_vel_(2)  = pl_odom->twist.twist.linear.z;
   pl_orr_.x() = pl_odom->pose.pose.orientation.x;
   pl_orr_.y() = pl_odom->pose.pose.orientation.y;
   pl_orr_.z() = pl_odom->pose.pose.orientation.z;
@@ -353,11 +354,30 @@ void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPt
   pl_omg_(1)  = pl_odom->twist.twist.angular.y;
   pl_omg_(2)  = pl_odom->twist.twist.angular.z;
 
+  Eigen::Vector3d pl_vel_in;
+  pl_vel_in(0)  = pl_odom->twist.twist.linear.x;
+  pl_vel_in(1)  = pl_odom->twist.twist.linear.y;
+  pl_vel_in(2)  = pl_odom->twist.twist.linear.z;
+
+  const Eigen::Vector3d pl_vel_diff = pl_vel_in - pl_vel_;
+
+  static int consecutive_jumps = 0;
+
+  if (pl_vel_diff.norm() < pl_vel_jumpmax)
+    pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
+  else {
+    consecutive_jumps++;
+    if(consecutive_jumps >= 5){
+      pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
+    }
+  }
+
   // Set payload state using controller accessors
   cctv_controller_.set_pos_0  (pl_pos_);
   cctv_controller_.set_vel_0  (pl_vel_);
   cctv_controller_.set_R_0    (pl_orr_.normalized().toRotationMatrix());
   cctv_controller_.set_Omega_0(pl_omg_);
+  estimate_cable_state();
 
 //  publishSO3Command();
 }
@@ -401,7 +421,7 @@ void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &
     // TODO: Fallback to hover if position_cmd hasn't been received for some time
     if(!position_cmd_updated_){
       publishSO3Command();
-      ROS_ERROR_THROTTLE(0.25, "CONFUSING FLAG FUNCTION PUBLISHED SO3");
+//      ROS_ERROR_THROTTLE(0.25, "CONFUSING FLAG FUNCTION PUBLISHED SO3");
     }
     position_cmd_updated_ = false;
   }
@@ -426,6 +446,7 @@ void NodeletControlCCTV::estimate_cable_state(void){
 //  cable_q_.normalize();
 
   // 2. calculate q_i_dot
+
   const Eigen::Vector3d v_attach_0 = pl_vel_ + pl_omg_.cross(rho_i_);
   const Eigen::Vector3d v_attach_quad = v_attach_0 - quad_vel_;
   cable_q_dot_ = v_attach_quad / cable_length_;
@@ -434,7 +455,7 @@ void NodeletControlCCTV::estimate_cable_state(void){
 //                    pl_omg_(0),
 //                    pl_omg_(1),
 //                    pl_omg_(2));
-//  ROS_WARN_THROTTLE(1, "nodelet v_attach_0: [%2.2f, %2.2f, %2.2f]",
+//  ROS_WARN_THROTTLE(.01, "v_attach_0: [%2.2f, %2.2f, %2.2f]",
 //                    v_attach_0(0),
 //                    v_attach_0(1),
 //                    v_attach_0(2));
@@ -442,7 +463,12 @@ void NodeletControlCCTV::estimate_cable_state(void){
 //                    quad_vel_(0),
 //                    quad_vel_(1),
 //                    quad_vel_(2));
-//  ROS_WARN_THROTTLE(1, "nodelet v_attach_quad: [%2.2f, %2.2f, %2.2f]",
+//  ROS_WARN_THROTTLE(.01, "v_attach_quad: [%2.2f, %2.2f, %2.2f]",
+//                    v_attach_quad(0),
+//                    v_attach_quad(1),
+//                    v_attach_quad(2));
+
+//  ROS_WARN_THROTTLE(.01, "cable_q_dot: [%2.2f, %2.2f, %2.2f]",
 //                    v_attach_quad(0),
 //                    v_attach_quad(1),
 //                    v_attach_quad(2));
@@ -478,6 +504,14 @@ void NodeletControlCCTV::estimate_cable_state(void){
   cable_w_msg.vector.y = cable_w_(1);
   cable_w_msg.vector.z = cable_w_(2);
   cable_w_pub.publish(cable_w_msg);
+
+  geometry_msgs::Vector3Stamped payload_vel_msg;
+  payload_vel_msg.header.stamp = ros::Time::now();
+  payload_vel_msg.header.frame_id = frame_id_;
+  payload_vel_msg.vector.x = pl_vel_(0);
+  payload_vel_msg.vector.y = pl_vel_(1);
+  payload_vel_msg.vector.z = pl_vel_(2);
+  payload_vel_pub.publish(payload_vel_msg);
 
 }
 
@@ -553,7 +587,7 @@ void NodeletControlCCTV::onInit()
   frame_id_ = "/" + quadrotor_name;
 
   // Retrieve robot params
-  priv_nh.param("mass", robot_mass_, 0.5);
+  priv_nh.param("robot_mass", robot_mass_, 0.5);
   priv_nh.param("use_external_yaw", use_external_yaw_, true);
   priv_nh.param("gains/ki/x", ki_[0], 0.0);
   priv_nh.param("gains/ki/y", ki_[1], 0.0);
@@ -596,6 +630,9 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_q", k_q_,              0.0);
   priv_nh.param("k_w", k_w_,              0.0);
 
+  priv_nh.param("pl_vel_lowpass_alpha", pl_vel_lowpass_alpha,  0.05);
+  priv_nh.param("pl_vel_jumpmax", pl_vel_jumpmax,  0.1);
+
   // Retrieve attachment point params for all robots
   for (int i=0; i<n_bots_; i++){
     ROS_INFO("loading rho %i", i);
@@ -635,6 +672,7 @@ void NodeletControlCCTV::onInit()
   cable_q_pub         = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_q", 10);
   cable_q_dot_pub     = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_q_dot", 10);
   cable_w_pub         = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_w", 10);
+  payload_vel_pub     = priv_nh.advertise<geometry_msgs::Vector3Stamped>("payload_vel", 10);
 
   payload_odom_sub_   = priv_nh.subscribe("payload_odom", 10, &NodeletControlCCTV::payload_odom_callback,         this, ros::TransportHints().tcpNoDelay());
   quad_odom_sub_      = priv_nh.subscribe("quad_odom",    10, &NodeletControlCCTV::quad_odom_callback,            this, ros::TransportHints().tcpNoDelay());

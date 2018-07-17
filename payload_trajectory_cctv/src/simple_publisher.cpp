@@ -17,18 +17,11 @@ int main(int argc, char **argv)
   int count = 0;
   while (ros::ok())
   {
-
     std_msgs::String msg;
-
     msg.data = "hello penis!";
-
     chatter_pub.publish(msg);
-
     ros::spinOnce();
-
     loop_rate.sleep();
   }
-
-
   return 0;
 }

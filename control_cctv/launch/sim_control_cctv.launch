@@ -91,6 +91,19 @@
     <!-- MAV Manager -->
     <include file="$(find mav_manager)/launch/manager.launch"/>
 
+    <node pkg="viz_cctv"
+      type="VizCCTV"
+      name="VizCCTV"
+      output="screen">
+      <remap from="~payload_odom_topic" to="pl_pose"/>
+      <remap from="~uav_odom_topic" to="odom"/>
+      <remap from="~cable_q_topic" to="control_cctv/cable_q"/>
+      <remap from="~cable_q_dot_topic" to="control_cctv/cable_q_dot"/>
+      <remap from="~cable_w_topic" to="control_cctv/cable_w"/>
+      <param name="fixed_frame_id" value="simulator"/>
+      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
+    </node>
+
 <!--
     <include file="$(find quadrotor_simulator)/launch/control.launch">
     </include>
