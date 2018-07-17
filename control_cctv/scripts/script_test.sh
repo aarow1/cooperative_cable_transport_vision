@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROBOT="dragonfly11"
+ROBOT="quadrotor"
 
 echo "testing control_cctv functionality"
 
