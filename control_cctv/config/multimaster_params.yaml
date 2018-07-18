@@ -1,6 +1,7 @@
 sync_topics: ['/vicon/dragonfly11/odom',
   '/vicon/pl11/odom',
   '/dragonfly11/control_cctv/payload_cmd',
-  '/dragonfly11/control_cctv/use_cctv_controller']
+  '/dragonfly11/control_cctv/use_cctv_controller',
+  '/dragonfly11/control_cctv/*']
 ignore_nodes: ['']
 ignore_services: ['']
