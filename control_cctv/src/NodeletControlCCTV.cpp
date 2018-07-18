@@ -361,32 +361,32 @@ void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPt
 
   pl_vel_ = pl_vel_in;
   //////////////////////////////////////////////////////
-  static ros::Time t_last = pl_odom->header.stamp;
-  static Eigen::Vector3d pl_vel_in_last;
-  static Eigen::Vector3d pl_acc;
+//  static ros::Time t_last = pl_odom->header.stamp;
+//  static Eigen::Vector3d pl_vel_in_last;
+//  static Eigen::Vector3d pl_acc;
 
-  ros::Time t_now = pl_odom->header.stamp;
-  double dt = (t_now - t_last).toSec();
+//  ros::Time t_now = pl_odom->header.stamp;
+//  double dt = (t_now - t_last).toSec();
 
-  static int spike_count = 0;
-  if((dt > 0.015) || (dt < .005)){
-    spike_count=1;
-    // do not change pl_acc
-    ROS_INFO("time spike");
-  }
+//  static int spike_count = 0;
+//  if((dt > 0.015) || (dt < .005)){
+//    spike_count=1;
+//    // do not change pl_acc
+//    ROS_INFO("time spike");
+//  }
 
-  if(spike_count > 0){
-    pl_vel_ = pl_vel_ + pl_acc * dt;
-    spike_count = spike_count + 1;
-    if(spike_count > 10){
-      spike_count = 0;
-    }
-    ROS_INFO("spike count %i", spike_count);
-  } else {
-    pl_acc = (pl_vel_in - pl_vel_) / dt;
-    pl_vel_ = pl_vel_in;
-  }
-  t_last = t_now;
+//  if(spike_count > 0){
+//    pl_vel_ = pl_vel_ + pl_acc * dt;
+//    spike_count = spike_count + 1;
+//    if(spike_count > 10){
+//      spike_count = 0;
+//    }
+//    ROS_INFO("spike count %i", spike_count);
+//  } else {
+//    pl_acc = (pl_vel_in - pl_vel_) / dt;
+//    pl_vel_ = pl_vel_in;
+//  }
+//  t_last = t_now;
   ////////////////////////////////////////////////
 
 //  static int consecutive_jumps = 0;
