@@ -359,18 +359,53 @@ void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPt
   pl_vel_in(1)  = pl_odom->twist.twist.linear.y;
   pl_vel_in(2)  = pl_odom->twist.twist.linear.z;
 
-  const Eigen::Vector3d pl_vel_diff = pl_vel_in - pl_vel_;
+  pl_vel_ = pl_vel_in;
+  //////////////////////////////////////////////////////
+  static ros::Time t_last = pl_odom->header.stamp;
+  static Eigen::Vector3d pl_vel_in_last;
+  static Eigen::Vector3d pl_acc;
 
-  static int consecutive_jumps = 0;
+  ros::Time t_now = pl_odom->header.stamp;
+  double dt = (t_now - t_last).toSec();
 
-  if (pl_vel_diff.norm() < pl_vel_jumpmax)
-    pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
-  else {
-    consecutive_jumps++;
-    if(consecutive_jumps >= 5){
-      pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
-    }
+  static int spike_count = 0;
+  if((dt > 0.015) || (dt < .005)){
+    spike_count=1;
+    // do not change pl_acc
+    ROS_INFO("time spike");
   }
+
+  if(spike_count > 0){
+    pl_vel_ = pl_vel_ + pl_acc * dt;
+    spike_count = spike_count + 1;
+    if(spike_count > 10){
+      spike_count = 0;
+    }
+    ROS_INFO("spike count %i", spike_count);
+  } else {
+    pl_acc = (pl_vel_in - pl_vel_) / dt;
+    pl_vel_ = pl_vel_in;
+  }
+  t_last = t_now;
+  ////////////////////////////////////////////////
+
+//  static int consecutive_jumps = 0;
+
+//  if (pl_vel_diff.norm() >= pl_vel_jumpmax) {
+//    pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
+//  }
+//  else {
+//    pl_vel_ = pl_vel_in;
+//  }
+
+//  if (pl_vel_diff.norm() < pl_vel_jumpmax)
+//    pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
+//  else {
+//    consecutive_jumps++;
+//    if(consecutive_jumps >= 3){
+//      pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
+//    }
+//  }
 
   // Set payload state using controller accessors
   cctv_controller_.set_pos_0  (pl_pos_);
@@ -409,7 +444,7 @@ void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &
 
   cctv_controller_.set_R_i(quad_orr_.normalized().toRotationMatrix());
   cctv_controller_.set_Omega_i(quad_omg_);
-  estimate_cable_state();
+  //estimate_cable_state();
 
 
   if(position_cmd_init_)

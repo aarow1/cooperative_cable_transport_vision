@@ -20,7 +20,7 @@
       output="screen">
       <param name="server_address" value="mocap"/>
       <param name="frame_rate" value="100"/>
-      <param name="max_accel" value="10.0"/>
+      <param name="max_accel" value="7.5"/>
       <param name="publish_tf" value="true"/>
       <param name="fixed_frame_id" value="mocap"/>
       <rosparam param="model_list">
@@ -48,28 +48,6 @@
       output="screen">
       <param name="mesh_resource" value="package://mesh_visualization/mesh/hummingbird.mesh"/>
       <remap from="~input" to="$(arg uav_odom_topic)"/>
-    </node>
-
-    <!--nodelet manager
-      -->
-    <node pkg="nodelet"
-      type="nodelet"
-      name="$(arg nodelet_manager_name)"
-      args="manager"
-      output="screen"/>
-
-    <node pkg="nodelet"
-      type="nodelet"
-      args="load control_cctv/NodeletControlCCTV  $(arg nodelet_manager_name)"
-      name="control_cctv"
-      required="true"
-      output="screen">
-      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
-      <remap from="~quad_odom" to="$(arg uav_odom_topic)"/>
-      <remap from="~payload_odom" to="$(arg payload_odom_topic)"/>
-      <remap from="~position_cmd" to="position_cmd"/>
-      <remap from="~so3_cmd" to="so3_cmd"/>
-      <remap from="~motors" to="motors"/>
     </node>
 
     <node pkg="rviz"
