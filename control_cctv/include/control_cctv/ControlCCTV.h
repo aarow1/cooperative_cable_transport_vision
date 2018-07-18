@@ -65,6 +65,7 @@ class ControlCCTV
   const Vector3d     &getComputedForce();
   const Quaterniond  &getComputedOrientation();
   const Vector3d     &getComputedAngularVelocity();
+  const Vector3d     &get_u_i();
   const Vector3d     &get_u_i_parallel();
   const Vector3d     &get_u_i_perpendicular();
 
@@ -103,6 +104,7 @@ private:
   Vector3d angular_velocity_;
 
   // debugging outputs of controller
+  Vector3d u_i_;
   Vector3d u_i_parallel;
   Vector3d u_i_perpendicular;
 
