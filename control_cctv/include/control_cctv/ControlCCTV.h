@@ -67,7 +67,7 @@ class ControlCCTV
   const Vector3d     &getComputedAngularVelocity();
   const Vector3d     &get_u_i();
   const Vector3d     &get_u_i_prl();
-  const Vector3d     &get_u_i_perpendicular();
+  const Vector3d     &get_u_i_prp();
 
   // debugging outputs of controller TODO make these private
   Vector3d e_pos_0;
@@ -82,7 +82,7 @@ class ControlCCTV
   Vector3d q_i_des;
   Vector3d u_i_;
   Vector3d u_i_prl;
-  Vector3d u_i_perpendicular;
+  Vector3d u_i_prp;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
 

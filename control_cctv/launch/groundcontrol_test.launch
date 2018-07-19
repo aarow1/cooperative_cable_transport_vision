@@ -1,6 +1,6 @@
 <launch>
-  <arg name="robot_name" default="dragonfly11"/>
-  <arg name="uav_odom_topic" value="/vicon/$(arg robot_name)/odom"/>
+  <arg name="quad_name" default="dragonfly11"/>
+  <arg name="quad_odom_topic" value="/vicon/$(arg quad_name)/odom"/>
   <arg name="payload_odom_topic" value="/vicon/pl11/odom"/>
   <arg name="nodelet_manager_name" default="nodelet_manager_control"/>
   <arg name="rviz" default="1"/>
@@ -33,12 +33,17 @@
       name="VizCCTV"
       output="screen">
       <remap from="~payload_odom_topic" to="$(arg payload_odom_topic)"/>
-      <remap from="~uav_odom_topic" to="$(arg uav_odom_topic)"/>
-      <remap from="~cable_q_topic" to="/$(arg robot_name)/control_cctv/cable_q"/>
-      <remap from="~cable_q_dot_topic" to="/$(arg robot_name)/control_cctv/cable_q_dot"/>
-      <remap from="~cable_w_topic" to="/$(arg robot_name)/control_cctv/cable_w"/>
-      <remap from="~payload_vel_topic" to="/$(arg robot_name)/control_cctv/payload_vel"/>
-      <param name="fixed_frame_id" value="mocap"/>
+      <remap from="~quad_odom_topic" to="$(arg quad_odom_topic)"/>
+      <remap from="~q_i_topic"      to="/$(arg quad_name)/control_cctv/q_i"/>
+      <remap from="~q_i_dot_topic"  to="/$(arg quad_name)/control_cctv/q_i_dot"/>
+      <remap from="~w_i_topic"      to="/$(arg quad_name)/control_cctv/w_i"/>
+      <remap from="~u_i_topic"      to="/$(arg quad_name)/control_cctv/u_i"/>
+      <remap from="~u_i_prl_topic"  to="/$(arg quad_name)/control_cctv/u_i_prl"/>
+      <remap from="~u_i_prp_topic"  to="/$(arg quad_name)/control_cctv/u_i_prp"/>
+      <remap from="~F_0_des_topic"  to="/$(arg quad_name)/control_cctv/F_0_des"/>
+      <remap from="~M_0_des_topic"  to="/$(arg quad_name)/control_cctv/M_0_des"/>
+      <remap from="~q_i_des_topic"  to="/$(arg quad_name)/control_cctv/q_i_des"/>
+      <param name="fixed_frame_id" value="simulator"/>
       <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
     </node>
 
@@ -47,7 +52,7 @@
       name="mesh_visualization"
       output="screen">
       <param name="mesh_resource" value="package://mesh_visualization/mesh/hummingbird.mesh"/>
-      <remap from="~input" to="$(arg uav_odom_topic)"/>
+      <remap from="~input" to="$(arg quad_odom_topic)"/>
     </node>
 
     <node pkg="rviz"

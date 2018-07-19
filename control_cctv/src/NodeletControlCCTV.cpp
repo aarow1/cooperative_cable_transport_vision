@@ -375,7 +375,7 @@ void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCom
 
 void NodeletControlCCTV::payload_cmd_callback(const geometry_msgs::Pose::ConstPtr &payload_cmd)
 {
-  des_pos_0_ = Eigen::Vector3d(payload_cmd->position.x, payload_cmd->position.x, payload_cmd->position.x);
+  des_pos_0_ = Eigen::Vector3d(payload_cmd->position.x, payload_cmd->position.y, payload_cmd->position.z);
   Eigen::Quaterniond cmd_quaternion = Eigen::Quaterniond(payload_cmd->orientation.x,
                                       payload_cmd->orientation.y,
                                       payload_cmd->orientation.z,
@@ -533,7 +533,6 @@ void NodeletControlCCTV::onInit()
   // Set cctv_controller des to zero TODO not this
 
   des_pos_0_.setZero();
-  des_pos_0_(2) = 0.1;
   des_vel_0_.setZero();
   des_acc_0_.setZero();
   des_R_0_.setIdentity();
