@@ -111,13 +111,13 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   //==============================================================================================//
 
   // Payload errors
-  const Vector3d e_pos_0     = pos_0_ - des_pos_0;
-  const Vector3d e_vel_0     = vel_0_ - des_vel_0;
-  const Vector3d e_R_0       = 0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
-  const Vector3d e_Omega_0   = Omega_0_ - (R_0_.transpose() * des_R_0 * des_Omega_0);
+  e_pos_0     = pos_0_ - des_pos_0;
+  e_vel_0     = vel_0_ - des_vel_0;
+  e_R_0       = 0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
+  e_Omega_0   = Omega_0_ - (R_0_.transpose() * des_R_0 * des_Omega_0);
 
   // Payload force and moment (eq. 20, 21) TODO: add integral terms
-  const Vector3d F_0_des = m_0_ * (
+  F_0_des = m_0_ * (
           (-1.0 * k_pos_0 * e_pos_0)  // P control
         + (-1.0 * k_vel_0 * e_vel_0)  // D control
         + (des_acc_0)                 // Feedforward Acceleration
@@ -125,7 +125,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
         );
 
 //  const Vector3d M_0_des_ =
-//        (-1.0 * k_R_0     * e_R_0)
+//        (-1.0 * k_R_0     * e_R_0)date: February 2018.
 //      + (-1.0 * k_Omega_0 * e_Omega_0)
 //      + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
 //      * (J_0_ * R_0_.transpose() * des_R_0 * des_Omega_0)
@@ -160,8 +160,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
       + (R_0_ * VIOUtil::getSkew(Omega_0_) * VIOUtil::getSkew(Omega_0_) * rho_.block<3,1>(0,idx_))
       - (R_0_ * VIOUtil::getSkew(rho_.block<3,1>(0,idx_)) * des_alpha_0);
 
-  // Parallel component of control (eq. 17)
-  u_i_parallel = mu_i
+  // prl component of control (eq. 17)
+  u_i_prl = mu_i
       + (m_i_ * l_i_ * (w_i_.norm() * w_i_.norm()) * q_i_)
       + (m_i_ * q_i_ * q_i_.transpose() * a_i);
 
@@ -170,7 +170,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   //==================================//
 
   // Desired Cable Angle
-  static Vector3d q_i_des = -Vector3d::UnitZ();
+  q_i_des = -Vector3d::UnitZ();
   static Vector3d q_i_des_last = q_i_des;
   if(mu_i_des.norm() > eps)
     q_i_des = mu_i_des.normalized();
@@ -187,9 +187,10 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   const Vector3d q_i_des_dot_raw = q_i_des_dot_direction * q_i_des_dot_magnitude;
 
+  // low pass filter q_i_des_dot
   static const double alpha = 0.5;
   static Vector3d q_i_des_dot_last;
-  const Vector3d q_i_des_dot = alpha*q_i_des_dot_last + (1-alpha)*q_i_des_dot_raw;  // Low pass filter
+  const Vector3d q_i_des_dot = alpha*q_i_des_dot_last + (1-alpha)*q_i_des_dot_raw;
   q_i_des_dot_last = q_i_des_dot;
 
   // Desired cable angular velocity
@@ -202,11 +203,11 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   const Matrix3d q_i_hat_2 = q_i_hat * q_i_hat;
 
   // Cable errors
-  const Vector3d e_q_i = q_i_des.cross(q_i_);
-  const Vector3d e_w_i = w_i_ + q_i_hat_2 * w_i_des;
+  e_q_i = q_i_des.cross(q_i_);
+  e_w_i = w_i_ + q_i_hat_2 * w_i_des;
 
-  // Perpendicular component of control <eq 27>
-  u_i_perpendicular = (m_i_ * l_i_ * q_i_hat) * (
+  // prp component of control <eq 27>
+  u_i_prp = (m_i_ * l_i_ * q_i_hat) * (
           (-1.0 * k_q *e_q_i)             // P control
         + (-1.0 * k_w *e_w_i)             // D control
         - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
@@ -214,7 +215,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
          );
         - (m_i_ * q_i_hat_2 * a_i);       //TODO: add delta term here, equation 27
 
-  u_i_ = u_i_parallel + u_i_perpendicular;
+  u_i_ = u_i_prl + u_i_prp;
 
   force_ = u_i_;
   for(int i = 0; i<3; i++){
@@ -249,7 +250,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 //  ROS_WARN_THROTTLE(t_db, "========================================");
 //  ROS_WARN_THROTTLE(t_db, "controller a_i = [%2.2f, %2.2f, %2.2f]", a_i(0), a_i(1), a_i(2));
 //  ROS_WARN_THROTTLE(1, "w_i_: [%2.2f, %2.2f, %2.2f]", w_i_(0), w_i_(1), w_i_(2));
-//  ROS_WARN_THROTTLE(1, "u_i_parallel: [%2.2f, %2.2f, %2.2f]", u_i_parallel(0), u_i_parallel(1), u_i_parallel(2));
+//  ROS_WARN_THROTTLE(1, "u_i_prl: [%2.2f, %2.2f, %2.2f]", u_i_prl(0), u_i_prl(1), u_i_prl(2));
 //  ROS_WARN("dt:              %2.9f", dt);
 //  ROS_WARN_THROTTLE(t_db, "F_0_des:    [%2.2f, %2.2f, %2.2f]", F_0_des(0), F_0_des(1), F_0_des(2));
 //  ROS_WARN_THROTTLE(t_db, "M_0_des_:    [%2.2f, %2.2f, %2.2f]", M_0_des_(0), M_0_des_(1), M_0_des_(2));
@@ -279,15 +280,15 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 //  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(0,0), perp_db(0,1), perp_db(0,2));
 //  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(1,0), perp_db(1,1), perp_db(1,2));
 //  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(2,0), perp_db(2,1), perp_db(2,2));
-  ROS_WARN_THROTTLE(t_db, "u_i_parallel: [%2.2f, %2.2f, %2.2f]", u_i_parallel(0), u_i_parallel(1), u_i_parallel(2));
-  ROS_WARN_THROTTLE(t_db, "u_i_perpendicular: [%2.2f, %2.2f, %2.2f]", u_i_perpendicular(0), u_i_perpendicular(1), u_i_perpendicular(2));
+//  ROS_WARN_THROTTLE(t_db, "u_i_prl: [%2.2f, %2.2f, %2.2f]", u_i_prl(0), u_i_prl(1), u_i_prl(2));
+//  ROS_WARN_THROTTLE(t_db, "u_i_prp: [%2.2f, %2.2f, %2.2f]", u_i_prp(0), u_i_prp(1), u_i_prp(2));
 //  ROS_WARN_THROTTLE(1, "u_i_: [%2.2f, %2.2f, %2.2f]", u_i_(0), u_i_(1), u_i_(2));
 
   ROS_ERROR_COND(std::isnan(orientation_.x()), "ORIENTATION x IS NAN");
   ROS_ERROR_COND(std::isnan(orientation_.y()), "ORIENTATION y IS NAN");
   ROS_ERROR_COND(std::isnan(orientation_.z()), "ORIENTATION z IS NAN");
   ROS_ERROR_COND(std::isnan(orientation_.w()), "ORIENTATION w IS NAN");
-  ROS_WARN_THROTTLE(1, "orientation_: [%2.2f, %2.2f, %2.2f, %2.2f]", orientation_.x(), orientation_.y(), orientation_.z(), orientation_.w());
+//  ROS_WARN_THROTTLE(1, "orientation_: [%2.2f, %2.2f, %2.2f, %2.2f]", orientation_.x(), orientation_.y(), orientation_.z(), orientation_.w());
 
   // Numerically calculate angular velocity (R_c - R_c_last) / dt
   Vector3d Omega_1_0 = VIOUtil::LogSO3(R_c_last.transpose()*R_c) * (1/dt);
@@ -310,9 +311,9 @@ const Vector3d     &ControlCCTV::getComputedAngularVelocity(){
 const Vector3d     &ControlCCTV::get_u_i(){
   return u_i_;
 }
-const Vector3d     &ControlCCTV::get_u_i_parallel(){
-  return u_i_parallel;
+const Vector3d     &ControlCCTV::get_u_i_prl(){
+  return u_i_prl;
 }
-const Vector3d     &ControlCCTV::get_u_i_perpendicular(){
-  return u_i_perpendicular;
+const Vector3d     &ControlCCTV::get_u_i_prp(){
+  return u_i_prp;
 }

@@ -67,7 +67,7 @@
 	      output="screen">
 	      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
 	      <param name="mass" value="$(arg mass)"/>
-        <remap from="~quad_odom" to="$(arg odotopic)"/>
+        <remap from="~uav_odom" to="$(arg odotopic)"/>
         <remap from="~payload_odom" to="$(arg pl_odom_topic)"/>
 	      <remap from="~position_cmd" to="position_cmd"/>
 	      <remap from="~so3_cmd" to="so3_cmd"/>

@@ -66,9 +66,23 @@ class ControlCCTV
   const Quaterniond  &getComputedOrientation();
   const Vector3d     &getComputedAngularVelocity();
   const Vector3d     &get_u_i();
-  const Vector3d     &get_u_i_parallel();
+  const Vector3d     &get_u_i_prl();
   const Vector3d     &get_u_i_perpendicular();
 
+  // debugging outputs of controller TODO make these private
+  Vector3d e_pos_0;
+  Vector3d e_vel_0;
+  Vector3d e_R_0;
+  Vector3d e_Omega_0;
+  Vector3d e_q_i;
+  Vector3d e_w_i;
+
+  Vector3d F_0_des;
+  Vector3d M_0_des;
+  Vector3d q_i_des;
+  Vector3d u_i_;
+  Vector3d u_i_prl;
+  Vector3d u_i_perpendicular;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
 
@@ -103,10 +117,6 @@ private:
   Quaterniond orientation_;
   Vector3d angular_velocity_;
 
-  // debugging outputs of controller
-  Vector3d u_i_;
-  Vector3d u_i_parallel;
-  Vector3d u_i_perpendicular;
 
   // Minimum norm of a vector where it can be reliably normalized
   const double eps = 1e-6f;

@@ -47,8 +47,8 @@ class NodeletControlCCTV : public nodelet::Nodelet
   void use_cctv_control_callback(const std_msgs::Bool::ConstPtr &msg);
 
   void estimate_cable_state(void);
-  void viz_cctv_control(void);
   void pub_viz(void);
+  void pub_vec3(ros::Publisher pub, Eigen::Vector3d vec);
 
   // Keep two controllers to switch between them
   ControlCCTV cctv_controller_;
@@ -59,9 +59,23 @@ class NodeletControlCCTV : public nodelet::Nodelet
   ros::Subscriber quad_odom_sub_, position_cmd_sub_, enable_motors_sub_, corrections_sub_;
   ros::Subscriber use_cctv_control_sub_;
 
-  ros::Publisher rviz_marker_pub;
-  ros::Publisher cable_q_pub, cable_q_dot_pub, cable_w_pub, payload_vel_pub;
-  ros::Publisher u_i_pub, u_i_parallel_pub, u_i_perpendicular_pub;
+  // Debug publishers
+  ros::Publisher q_i_pub;
+  ros::Publisher q_i_dot_pub;
+  ros::Publisher w_i_pub;
+
+  ros::Publisher u_i_pub, u_i_prl_pub, u_i_prp_pub;
+
+  ros::Publisher e_pos_0_pub;
+  ros::Publisher e_vel_0_pub;
+  ros::Publisher e_R_0_pub;
+  ros::Publisher e_Omega_0_pub;
+  ros::Publisher e_q_i_pub;
+  ros::Publisher e_w_i_pub;
+
+  ros::Publisher F_0_des_pub;
+  ros::Publisher M_0_des_pub;
+  ros::Publisher q_i_des_pub;
 
   bool position_cmd_updated_, position_cmd_init_;
   std::string frame_id_;
@@ -105,20 +119,20 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d     quad_omg_;
 
   // Cable state
-  Eigen::Vector3d     cable_q_;     // unit vector from robot to attachment point
-  Eigen::Vector3d     cable_q_dot_;
-  Eigen::Vector3d     cable_w_;
+  Eigen::Vector3d     q_i_;     // unit vector from robot to attachment point
+  Eigen::Vector3d     q_i_dot_;
+  Eigen::Vector3d     w_i_;
 
   // Payload state
-  Eigen::Vector3d     pl_pos_;
-  Eigen::Vector3d     pl_vel_;
+  Eigen::Vector3d     pos_0_;
+  Eigen::Vector3d     vel_0_;
   Eigen::Vector3d     pl_attach_;
-  Eigen::Quaterniond  pl_orr_;
-  Eigen::Vector3d     pl_omg_;
+  Eigen::Quaterniond  R_0_;
+  Eigen::Vector3d     Omega_0_;
 
   // Filter constants
-  double pl_vel_lowpass_alpha;
-  double pl_vel_jumpmax;
+  double vel_0_lowpass_alpha;
+  double vel_0_jumpmax;
 
   enum Controller {SO3_CONTROL, CCTV_CONTROL};
   Controller active_controller_ = SO3_CONTROL;
@@ -184,6 +198,7 @@ void NodeletControlCCTV::publishSO3Command()
 
 //    viz_cctv_control();
 
+    pub_viz();
     break;
   }
   case CCTV_CONTROL: {
@@ -217,6 +232,7 @@ void NodeletControlCCTV::publishSO3Command()
     so3_command->angular_velocity.y = ang_vel(1);
     so3_command->angular_velocity.z = ang_vel(2);
 
+    pub_viz();
     break;
   }
 
@@ -240,181 +256,28 @@ void NodeletControlCCTV::publishSO3Command()
   so3_command_pub_.publish(so3_command);
 }
 
-void NodeletControlCCTV::viz_cctv_control(){
-  visualization_msgs::MarkerArray marker_array_msg;
-
-  geometry_msgs::Point base;
-  base.x = quad_pos_(0);
-  base.y = quad_pos_(1);
-  base.z = quad_pos_(2);
-
-  // Net desired force arrow (green)
-  visualization_msgs::Marker force_marker_msg;
-  force_marker_msg.header.stamp = ros::Time::now();
-  force_marker_msg.header.frame_id = "simulator";
-  force_marker_msg.ns = "force_arrow";
-  force_marker_msg.type = visualization_msgs::Marker::ARROW;
-  force_marker_msg.action = visualization_msgs::Marker::ADD;
-  force_marker_msg.lifetime = ros::Duration();
-  force_marker_msg.scale.x = 0.05;   // shaft diameter
-  force_marker_msg.scale.y = 0.1;   // head diameter
-  force_marker_msg.color.r = 0.0;
-  force_marker_msg.color.g = 1.0;
-  force_marker_msg.color.b = 0.0;
-  force_marker_msg.color.a = 1.0;
-
-  const double vec_scale = 0.05;
-
-  geometry_msgs::Point force_tip;
-  const Eigen::Vector3d &cctv_force = cctv_controller_.getComputedForce();
-  force_tip.x = quad_pos_(0) + (cctv_force(0)*vec_scale);
-  force_tip.y = quad_pos_(1) + (cctv_force(1)*vec_scale);
-  force_tip.z = quad_pos_(2) + (cctv_force(2)*vec_scale);
-  force_marker_msg.points.push_back(base);
-  force_marker_msg.points.push_back(force_tip);
-
-  // Parallel component of force (yellow)
-  visualization_msgs::Marker parallel_marker;
-  parallel_marker.header.stamp = ros::Time::now();
-  parallel_marker.header.frame_id = "simulator";
-  parallel_marker.ns = "parallel_marker";
-  parallel_marker.type = visualization_msgs::Marker::ARROW;
-  parallel_marker.action = visualization_msgs::Marker::ADD;
-  parallel_marker.lifetime = ros::Duration();
-  parallel_marker.scale.x = 0.05;   // shaft diameter
-  parallel_marker.scale.y = 0.1;   // head diameter
-  parallel_marker.color.r = 1.0;
-  parallel_marker.color.g = 1.0;
-  parallel_marker.color.b = 0.0;
-  parallel_marker.color.a = 1.0;
-  geometry_msgs::Point parallel_tip;
-  const Eigen::Vector3d &cctv_parallel = cctv_controller_.get_u_i_parallel();
-  parallel_tip.x = quad_pos_(0) + (cctv_parallel(0)*vec_scale);
-  parallel_tip.y = quad_pos_(1) + (cctv_parallel(1)*vec_scale);
-  parallel_tip.z = quad_pos_(2) + (cctv_parallel(2)*vec_scale);
-  parallel_marker.points.push_back(base);
-  parallel_marker.points.push_back(parallel_tip);
-
-  // Perpendicular component of force (blue)
-  visualization_msgs::Marker perpendicular_marker;
-  perpendicular_marker.header.stamp = ros::Time::now();
-  perpendicular_marker.header.frame_id = "simulator";
-  perpendicular_marker.ns = "perpendicular_marker";
-  perpendicular_marker.type = visualization_msgs::Marker::ARROW;
-  perpendicular_marker.action = visualization_msgs::Marker::ADD;
-  perpendicular_marker.lifetime = ros::Duration();
-  perpendicular_marker.scale.x = 0.05;   // shaft diameter
-  perpendicular_marker.scale.y = 0.1;   // head diameter
-  perpendicular_marker.color.r = 0.0;
-  perpendicular_marker.color.g = 0.0;
-  perpendicular_marker.color.b = 1.0;
-  perpendicular_marker.color.a = 1.0;
-  geometry_msgs::Point perpendicular_tip;
-  const Eigen::Vector3d &cctv_perpendicular = cctv_controller_.get_u_i_perpendicular();
-  perpendicular_tip.x = quad_pos_(0) + (cctv_perpendicular(0)*vec_scale);
-  perpendicular_tip.y = quad_pos_(1) + (cctv_perpendicular(1)*vec_scale);
-  perpendicular_tip.z = quad_pos_(2) + (cctv_perpendicular(2)*vec_scale);
-  perpendicular_marker.points.push_back(base);
-  perpendicular_marker.points.push_back(perpendicular_tip);
-
-  // attachment point
-  visualization_msgs::Marker attach_marker;
-  attach_marker.header.stamp = ros::Time::now();
-  attach_marker.header.frame_id = "simulator";
-  attach_marker.ns = "attachment_point";
-  attach_marker.type = visualization_msgs::Marker::SPHERE;
-  attach_marker.action = visualization_msgs::Marker::ADD;
-  attach_marker.lifetime = ros::Duration();
-  attach_marker.pose.position.x = pl_attach_(0);
-  attach_marker.pose.position.y = pl_attach_(1);
-  attach_marker.pose.position.z = pl_attach_(2);
-  attach_marker.scale.x = 0.1;
-  attach_marker.scale.y = 0.1;
-  attach_marker.scale.z = 0.1;
-  attach_marker.color.r = 0.0;
-  attach_marker.color.g = 0.0;
-  attach_marker.color.b = 1.0;
-  attach_marker.color.a = 1.0;
-
-  // Add all markers to marker array
-  marker_array_msg.markers.push_back(force_marker_msg);
-  marker_array_msg.markers.push_back(parallel_marker);
-  marker_array_msg.markers.push_back(perpendicular_marker);
-  marker_array_msg.markers.push_back(attach_marker);
-  rviz_marker_pub.publish(marker_array_msg);
-}
-
 void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPtr &pl_odom)
 {
-  pl_pos_(0)  = pl_odom->pose.pose.position.x;
-  pl_pos_(1)  = pl_odom->pose.pose.position.y;
-  pl_pos_(2)  = pl_odom->pose.pose.position.z;
-  pl_orr_.x() = pl_odom->pose.pose.orientation.x;
-  pl_orr_.y() = pl_odom->pose.pose.orientation.y;
-  pl_orr_.z() = pl_odom->pose.pose.orientation.z;
-  pl_orr_.w() = pl_odom->pose.pose.orientation.w;
-  pl_omg_(0)  = pl_odom->twist.twist.angular.x;
-  pl_omg_(1)  = pl_odom->twist.twist.angular.y;
-  pl_omg_(2)  = pl_odom->twist.twist.angular.z;
+  pos_0_(0)  = pl_odom->pose.pose.position.x;
+  pos_0_(1)  = pl_odom->pose.pose.position.y;
+  pos_0_(2)  = pl_odom->pose.pose.position.z;
+  R_0_.x() = pl_odom->pose.pose.orientation.x;
+  R_0_.y() = pl_odom->pose.pose.orientation.y;
+  R_0_.z() = pl_odom->pose.pose.orientation.z;
+  R_0_.w() = pl_odom->pose.pose.orientation.w;
+  Omega_0_(0)  = pl_odom->twist.twist.angular.x;
+  Omega_0_(1)  = pl_odom->twist.twist.angular.y;
+  Omega_0_(2)  = pl_odom->twist.twist.angular.z;
+  vel_0_(0)  = pl_odom->twist.twist.linear.x;
+  vel_0_(1)  = pl_odom->twist.twist.linear.y;
+  vel_0_(2)  = pl_odom->twist.twist.linear.z;
 
-  Eigen::Vector3d pl_vel_in;
-  pl_vel_in(0)  = pl_odom->twist.twist.linear.x;
-  pl_vel_in(1)  = pl_odom->twist.twist.linear.y;
-  pl_vel_in(2)  = pl_odom->twist.twist.linear.z;
-
-  pl_vel_ = pl_vel_in;
-  //////////////////////////////////////////////////////
-//  static ros::Time t_last = pl_odom->header.stamp;
-//  static Eigen::Vector3d pl_vel_in_last;
-//  static Eigen::Vector3d pl_acc;
-
-//  ros::Time t_now = pl_odom->header.stamp;
-//  double dt = (t_now - t_last).toSec();
-
-//  static int spike_count = 0;
-//  if((dt > 0.015) || (dt < .005)){
-//    spike_count=1;
-//    // do not change pl_acc
-//    ROS_INFO("time spike");
-//  }
-
-//  if(spike_count > 0){
-//    pl_vel_ = pl_vel_ + pl_acc * dt;
-//    spike_count = spike_count + 1;
-//    if(spike_count > 10){
-//      spike_count = 0;
-//    }
-//    ROS_INFO("spike count %i", spike_count);
-//  } else {
-//    pl_acc = (pl_vel_in - pl_vel_) / dt;
-//    pl_vel_ = pl_vel_in;
-//  }
-//  t_last = t_now;
-  ////////////////////////////////////////////////
-
-//  static int consecutive_jumps = 0;
-
-//  if (pl_vel_diff.norm() >= pl_vel_jumpmax) {
-//    pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
-//  }
-//  else {
-//    pl_vel_ = pl_vel_in;
-//  }
-
-//  if (pl_vel_diff.norm() < pl_vel_jumpmax)
-//    pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
-//  else {
-//    consecutive_jumps++;
-//    if(consecutive_jumps >= 3){
-//      pl_vel_ = pl_vel_ + pl_vel_lowpass_alpha * (pl_vel_in - pl_vel_);
-//    }
-//  }
 
   // Set payload state using controller accessors
-  cctv_controller_.set_pos_0  (pl_pos_);
-  cctv_controller_.set_vel_0  (pl_vel_);
-  cctv_controller_.set_R_0    (pl_orr_.normalized().toRotationMatrix());
-  cctv_controller_.set_Omega_0(pl_omg_);
+  cctv_controller_.set_pos_0  (pos_0_);
+  cctv_controller_.set_vel_0  (vel_0_);
+  cctv_controller_.set_R_0    (R_0_.normalized().toRotationMatrix());
+  cctv_controller_.set_Omega_0(Omega_0_);
   estimate_cable_state();
 
 //  publishSO3Command();
@@ -447,8 +310,6 @@ void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &
 
   cctv_controller_.set_R_i(quad_orr_.normalized().toRotationMatrix());
   cctv_controller_.set_Omega_i(quad_omg_);
-  //estimate_cable_state();
-
 
   if(position_cmd_init_)
   {
@@ -474,51 +335,25 @@ void NodeletControlCCTV::estimate_cable_state(void){
   // Note: p = location, v = velocity, p_b_0 = position, of(sub) b, in-frame(super) 0
 
   // 1. calculate q_i
-  const Eigen::Matrix3d R_pl_0 = pl_orr_.normalized().toRotationMatrix();
-  const Eigen::Vector3d p_attach_0 = pl_pos_ + (R_pl_0 * rho_i_);
+  const Eigen::Matrix3d R_pl_0 = R_0_.normalized().toRotationMatrix();
+  const Eigen::Vector3d p_attach_0 = pos_0_ + (R_pl_0 * rho_i_);
   pl_attach_ = p_attach_0;
   const Eigen::Vector3d p_attach_quad = (p_attach_0 - quad_pos_);
   if(p_attach_quad.norm() > 0.01){
-    cable_q_ = p_attach_quad.normalized();
+    q_i_ = p_attach_quad.normalized();
   }
-//  cable_q_.normalize();
 
   // 2. calculate q_i_dot
-
-  const Eigen::Vector3d v_attach_0 = pl_vel_ + pl_omg_.cross(rho_i_);
+  const Eigen::Vector3d v_attach_0 = vel_0_ + Omega_0_.cross(rho_i_);
   const Eigen::Vector3d v_attach_quad = v_attach_0 - quad_vel_;
-  cable_q_dot_ = v_attach_quad / cable_length_;
-
-//  ROS_WARN_THROTTLE(1, "nodelet pl_omg_: [%2.2f, %2.2f, %2.2f]",
-//                    pl_omg_(0),
-//                    pl_omg_(1),
-//                    pl_omg_(2));
-//  ROS_WARN_THROTTLE(.01, "v_attach_0: [%2.2f, %2.2f, %2.2f]",
-//                    v_attach_0(0),
-//                    v_attach_0(1),
-//                    v_attach_0(2));
-//  ROS_WARN_THROTTLE(1, "nodelet quad_vel_: [%2.2f, %2.2f, %2.2f]",
-//                    quad_vel_(0),
-//                    quad_vel_(1),
-//                    quad_vel_(2));
-//  ROS_WARN_THROTTLE(.01, "v_attach_quad: [%2.2f, %2.2f, %2.2f]",
-//                    v_attach_quad(0),
-//                    v_attach_quad(1),
-//                    v_attach_quad(2));
-
-//  ROS_WARN_THROTTLE(.01, "cable_q_dot: [%2.2f, %2.2f, %2.2f]",
-//                    v_attach_quad(0),
-//                    v_attach_quad(1),
-//                    v_attach_quad(2));
+  q_i_dot_ = v_attach_quad / cable_length_;
 
   // 3. calculate w_i (yikes)
-  cable_w_ = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
+  w_i_ = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
 
-  cctv_controller_.set_q_i(cable_q_);
-  cctv_controller_.set_q_i_dot(cable_q_dot_);
-  cctv_controller_.set_w_i(cable_w_);
-
-
+  cctv_controller_.set_q_i(q_i_);
+  cctv_controller_.set_q_i_dot(q_i_dot_);
+  cctv_controller_.set_w_i(w_i_);
 }
 
 void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd)
@@ -579,67 +414,34 @@ void NodeletControlCCTV::use_cctv_control_callback(const std_msgs::Bool::ConstPt
 
 void NodeletControlCCTV::pub_viz()
 {
-  // create common header
-  std_msgs::Header head;
-  head.stamp = ros::Time::now();
-  head.frame_id = frame_id_;
-  static int head_seq = 0;
-  head_seq++;
-  head.seq = head_seq;
+  pub_vec3(q_i_pub,         q_i_);
+  pub_vec3(q_i_dot_pub,     q_i_dot_);
+  pub_vec3(w_i_pub,         w_i_);
+  pub_vec3(u_i_pub,         cctv_controller_.get_u_i());
+  pub_vec3(u_i_prl_pub,  cctv_controller_.get_u_i_prl());
+  pub_vec3(u_i_prp_pub,  cctv_controller_.get_u_i_prp());
 
-  // Cable State
-  geometry_msgs::Vector3Stamped cable_q_msg;
-  cable_q_msg.header    = head;
-  cable_q_msg.vector.x  = cable_q_(0);
-  cable_q_msg.vector.y  = cable_q_(1);
-  cable_q_msg.vector.z  = cable_q_(2);
-  cable_q_pub.publish(    cable_q_msg);
+  pub_vec3(e_pos_0_pub,     cctv_controller_.e_pos_0);
+  pub_vec3(e_vel_0_pub,     cctv_controller_.e_vel_0);
+  pub_vec3(e_R_0_pub,       cctv_controller_.e_R_0);
+  pub_vec3(e_Omega_0_pub,   cctv_controller_.e_Omega_0);
+  pub_vec3(e_q_i_pub,       cctv_controller_.e_q_i);
+  pub_vec3(e_w_i_pub,       cctv_controller_.e_w_i);
 
-  geometry_msgs::Vector3Stamped cable_q_dot_msg;
-  cable_q_dot_msg.header    = head;
-  cable_q_dot_msg.vector.x  = cable_q_dot_(0);
-  cable_q_dot_msg.vector.y  = cable_q_dot_(1);
-  cable_q_dot_msg.vector.z  = cable_q_dot_(2);
-  cable_q_dot_pub.publish(  cable_q_dot_msg);
+  pub_vec3(F_0_des_pub,     cctv_controller_.F_0_des);
+  pub_vec3(M_0_des_pub,     cctv_controller_.M_0_des);
+  pub_vec3(q_i_des_pub,     cctv_controller_.q_i_des);
+}
 
-  geometry_msgs::Vector3Stamped cable_w_msg;
-  cable_w_msg.header    = head;
-  cable_w_msg.vector.x  = cable_w_(0);
-  cable_w_msg.vector.y  = cable_w_(1);
-  cable_w_msg.vector.z  = cable_w_(2);
-  cable_w_pub.publish(  cable_w_msg);
-
-  geometry_msgs::Vector3Stamped payload_vel_msg;
-  payload_vel_msg.header    = head;
-  payload_vel_msg.vector.x  = pl_vel_(0);
-  payload_vel_msg.vector.y  = pl_vel_(1);
-  payload_vel_msg.vector.z  = pl_vel_(2);
-  payload_vel_pub.publish(  payload_vel_msg);
-
-  // Controller outputs
-  geometry_msgs::Vector3Stamped u_i_msg;
-  const Eigen::Vector3d     u_i_val = cctv_controller_.get_u_i();
-  u_i_msg.header   = head;
-  u_i_msg.vector.x = u_i_val(0);
-  u_i_msg.vector.y = u_i_val(1);
-  u_i_msg.vector.z = u_i_val(2);
-  u_i_pub.publish(u_i_msg);
-
-  geometry_msgs::Vector3Stamped u_i_parallel_msg;
-  const Eigen::Vector3d     u_i_parallel_val = cctv_controller_.get_u_i_parallel();
-  u_i_parallel_msg.header   = head;
-  u_i_parallel_msg.vector.x = u_i_parallel_val(0);
-  u_i_parallel_msg.vector.y = u_i_parallel_val(1);
-  u_i_parallel_msg.vector.z = u_i_parallel_val(2);
-  u_i_parallel_pub.publish(u_i_parallel_msg);
-
-  geometry_msgs::Vector3Stamped u_i_perpendicular_msg;
-  const Eigen::Vector3d     u_i_perpendicular_val = cctv_controller_.get_u_i_perpendicular();
-  u_i_perpendicular_msg.header   = head;
-  u_i_perpendicular_msg.vector.x = u_i_perpendicular_val(0);
-  u_i_perpendicular_msg.vector.y = u_i_perpendicular_val(1);
-  u_i_perpendicular_msg.vector.z = u_i_perpendicular_val(2);
-  u_i_perpendicular_pub.publish(u_i_perpendicular_msg);
+void NodeletControlCCTV::pub_vec3(ros::Publisher pub, Eigen::Vector3d vec)
+{
+  geometry_msgs::Vector3Stamped msg;
+  msg.header.stamp = ros::Time::now();
+  msg.header.frame_id = frame_id_;
+  msg.vector.x = vec(0);
+  msg.vector.y = vec(1);
+  msg.vector.z = vec(2);
+  pub.publish(msg);
 }
 
 void NodeletControlCCTV::corrections_callback(const quadrotor_msgs::Corrections::ConstPtr &msg)
@@ -701,8 +503,8 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_q", k_q_,              0.0);
   priv_nh.param("k_w", k_w_,              0.0);
 
-  priv_nh.param("pl_vel_lowpass_alpha", pl_vel_lowpass_alpha,  0.05);
-  priv_nh.param("pl_vel_jumpmax", pl_vel_jumpmax,  0.1);
+  priv_nh.param("vel_0_lowpass_alpha", vel_0_lowpass_alpha,  0.05);
+  priv_nh.param("vel_0_jumpmax", vel_0_jumpmax,  0.1);
 
   // Retrieve attachment point params for all robots
   for (int i=0; i<n_bots_; i++){
@@ -738,15 +540,26 @@ void NodeletControlCCTV::onInit()
   des_Omega_0_.setZero();
   des_alpha_0_.setZero();
 
-  so3_command_pub_      = priv_nh.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
-  rviz_marker_pub       = priv_nh.advertise<visualization_msgs::MarkerArray>("cctv_controller_marker_array", 10);
-  cable_q_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_q", 10);
-  cable_q_dot_pub       = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_q_dot", 10);
-  cable_w_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("cable_w", 10);
-  payload_vel_pub       = priv_nh.advertise<geometry_msgs::Vector3Stamped>("payload_vel", 10);
-  u_i_pub               = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i", 10);
-  u_i_parallel_pub      = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i_parallel", 10);
-  u_i_perpendicular_pub = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i_perpendicular", 10);
+  so3_command_pub_  = priv_nh.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
+  q_i_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("q_i", 10);
+  q_i_dot_pub       = priv_nh.advertise<geometry_msgs::Vector3Stamped>("q_i_dot", 10);
+  w_i_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("w_i", 10);
+
+  // controller debugging publishers
+  e_pos_0_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("e_pos_0", 10);
+  e_vel_0_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("e_vel_0", 10);
+  e_R_0_pub     = priv_nh.advertise<geometry_msgs::Vector3Stamped>("e_R_0", 10);
+  e_Omega_0_pub = priv_nh.advertise<geometry_msgs::Vector3Stamped>("e_Omega_0", 10);
+  e_q_i_pub     = priv_nh.advertise<geometry_msgs::Vector3Stamped>("e_q_i", 10);
+  e_w_i_pub     = priv_nh.advertise<geometry_msgs::Vector3Stamped>("e_w_i", 10);
+
+  F_0_des_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("F_0_des", 10);
+  M_0_des_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("M_0_des", 10);
+  q_i_des_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("q_i_des", 10);
+
+  u_i_pub       = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i", 10);
+  u_i_prl_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i_prl", 10);
+  u_i_prp_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i_prp", 10);
 
   payload_odom_sub_   = priv_nh.subscribe("payload_odom", 10, &NodeletControlCCTV::payload_odom_callback,         this, ros::TransportHints().tcpNoDelay());
   quad_odom_sub_      = priv_nh.subscribe("quad_odom",    10, &NodeletControlCCTV::quad_odom_callback,            this, ros::TransportHints().tcpNoDelay());
