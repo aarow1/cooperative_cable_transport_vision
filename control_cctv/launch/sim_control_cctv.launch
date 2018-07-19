@@ -1,7 +1,7 @@
 <launch>
 
 <arg name="robot_name" default="quadrotor"/>
-<arg name="mass" default="0.5"/>
+<arg name="mass" default="0.250"/>
 <arg name="start_nodelet_manager" default="1"/>
 <arg name="nodelet_manager_name" default="nodelet_manager_control"/>
 <arg name="rviz" default="1"/>
@@ -11,7 +11,7 @@
   <node pkg="rviz"
    type="rviz"
    name="rviz"
-   args="-d $(find control_cctv)/config/rviz_config.rviz"
+   args="-d $(find control_cctv)/config/sim_rviz_config.rviz"
    if="$(arg rviz)"/>
 
   <group ns="$(arg robot_name)">
@@ -42,7 +42,7 @@
       name="control_cctv"
       required="true"
       output="screen">
-      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/sim_cable_vision_params.yaml"/>
       <param name="mass" value="$(arg mass)"/>
       <remap from="~quad_odom" to="odom"/>
       <remap from="~payload_odom" to="pl_pose"/>
