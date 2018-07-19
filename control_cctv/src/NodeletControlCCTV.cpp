@@ -340,9 +340,9 @@ void NodeletControlCCTV::estimate_cable_state(void){
   if(p_attach_quad.norm() > 0.01){
     q_i_ = p_attach_quad.normalized();
   }
-  ROS_INFO_THROTTLE(.5, "pos_0: [%2.2f %2.2f %2.2f]", pos_0(0), pos_0(0), pos_0(0));
-  ROS_INFO_THROTTLE(.5, "quad_pos_: [%2.2f %2.2f %2.2f]", quad_pos_(0), quad_pos_(0), quad_pos_(0));
-  ROS_INFO_THROTTLE(.5, "q_i_: [%2.2f %2.2f %2.2f]", q_i_(0), q_i_(0), q_i_(0));
+//  ROS_INFO_THROTTLE(.5, "pos_0_: [%2.2f %2.2f %2.2f]", pos_0_(0), pos_0_(0), pos_0_(0));
+//  ROS_INFO_THROTTLE(.5, "quad_pos_: [%2.2f %2.2f %2.2f]", quad_pos_(0), quad_pos_(0), quad_pos_(0));
+//  ROS_INFO_THROTTLE(.5, "q_i_: [%2.2f %2.2f %2.2f]", q_i_(0), q_i_(0), q_i_(0));
 
   // 2. calculate q_i_dot
   const Eigen::Vector3d v_attach_0 = vel_0_ + Omega_0_.cross(rho_i_);
