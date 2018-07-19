@@ -17,18 +17,18 @@ max_pos_int_b: 0.5
 number_of_robots: 1
 
 quadrotor_name: dragonfly11
-mass: 0.250
+mass: 0.250 # redundant of robot_mass
 robot_mass: 0.250
 payload_mass: 0.025
 cable_length: 0.5
 my_index: 0
 
-k_pos_0: 0.001
-k_vel_0: 0.000
+k_pos_0: 20.0
+k_vel_0: 0.0
 k_R_0: 0.0
 k_Omega_0: 0.0
-k_q: 0.0001
-k_w: 0.001
+k_q: 50.0
+k_w: 5.0
 
 pl_vel_lowpass_alpha: 0.05
 pl_vel_jumpmax: 0.5

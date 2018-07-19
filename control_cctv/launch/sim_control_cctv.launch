@@ -1,6 +1,6 @@
 <launch>
 
-<arg name="robot_name" default="quadrotor"/>
+<arg name="quad_name" default="dragonfly11"/>
 <arg name="mass" default="0.250"/>
 <arg name="start_nodelet_manager" default="1"/>
 <arg name="nodelet_manager_name" default="nodelet_manager_control"/>
@@ -14,13 +14,13 @@
    args="-d $(find control_cctv)/config/sim_rviz_config.rviz"
    if="$(arg rviz)"/>
 
-  <group ns="$(arg robot_name)">
+  <group ns="$(arg quad_name)">
     <param name="mass" value="$(arg mass)"/>
 
     <!-- Still use same Simulator, it is subscribed to so3_cmd -->
     <!-- includes quadrotor dynamics simulator and mesh viz-->
     <include file="$(find quadrotor_simulator)/launch/sim.launch">
-      <arg name="name" value="$(arg robot_name)"/>
+      <arg name="name" value="$(arg quad_name)"/>
       <arg name="type" value="hummingbird"/>
       <arg name="mass" value="$(arg mass)"/>
     </include>
@@ -42,7 +42,7 @@
       name="control_cctv"
       required="true"
       output="screen">
-      <rosparam file="$(find control_cctv)/config/sim_cable_vision_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
       <param name="mass" value="$(arg mass)"/>
       <remap from="~quad_odom" to="odom"/>
       <remap from="~payload_odom" to="pl_pose"/>
@@ -96,10 +96,16 @@
       name="VizCCTV"
       output="screen">
       <remap from="~payload_odom_topic" to="pl_pose"/>
-      <remap from="~uav_odom_topic" to="odom"/>
-      <remap from="~cable_q_topic" to="control_cctv/cable_q"/>
-      <remap from="~cable_q_dot_topic" to="control_cctv/cable_q_dot"/>
-      <remap from="~cable_w_topic" to="control_cctv/cable_w"/>
+      <remap from="~quad_odom_topic" to="odom"/>
+      <remap from="~q_i_topic"      to="control_cctv/q_i"/>
+      <remap from="~q_i_dot_topic"  to="control_cctv/q_i_dot"/>
+      <remap from="~w_i_topic"      to="control_cctv/w_i"/>
+      <remap from="~u_i_topic"      to="control_cctv/u_i"/>
+      <remap from="~u_i_prl_topic"  to="control_cctv/u_i_prl"/>
+      <remap from="~u_i_prp_topic"  to="control_cctv/u_i_prp"/>
+      <remap from="~F_0_des_topic"  to="control_cctv/F_0_des"/>
+      <remap from="~M_0_des_topic"  to="control_cctv/M_0_des"/>
+      <remap from="~q_i_des_topic"  to="control_cctv/q_i_des"/>
       <param name="fixed_frame_id" value="simulator"/>
       <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
     </node>

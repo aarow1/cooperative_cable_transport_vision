@@ -173,7 +173,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   q_i_des = -Vector3d::UnitZ();
   static Vector3d q_i_des_last = q_i_des;
   if(mu_i_des.norm() > eps)
-    q_i_des = mu_i_des.normalized();
+    q_i_des = -mu_i_des.normalized();
   else
     q_i_des = -Vector3d::UnitZ();
 
@@ -194,9 +194,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   q_i_des_dot_last = q_i_des_dot;
 
   // Desired cable angular velocity
-  static Vector3d w_i_des;
-  const Vector3d w_i_des_last = w_i_des;
-  w_i_des = q_i_des.cross(q_i_des_dot);   // (eq 26.5)
+  static Vector3d w_i_des = q_i_des.cross(q_i_des_dot);   // (eq 26.5)
 //  const Vector3d w_i_des_dot = (w_i_des - w_i_des_last) / dt; // Second numerical derivative is too noisy
 
   const Matrix3d q_i_hat = VIOUtil::getSkew(q_i_);
@@ -239,20 +237,19 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   Matrix3d R_c_last = orientation_.normalized().toRotationMatrix();
   orientation_ = Quaterniond(R_c);
 
-  const double t_db = 0.1;
+//  const double t_db = 0.1;
 
-//  ROS_WARN_THROTTLE(1, "e_pos_0: [%2.2f, %2.2f, %2.2f]", e_pos_0(0), e_pos_0(1), e_pos_0(2));
-//  ROS_WARN_THROTTLE(1, "k_pos_0: %2.2f", k_pos_0);
+//  ROS_WARN_THROTTLE(1, "e_pos_0:    [%2.2f, %2.2f, %2.2f]", e_pos_0(0), e_pos_0(1), e_pos_0(2));
+//  ROS_WARN_THROTTLE(1, "F_0_des:    [%2.2f, %2.2f, %2.2f]", F_0_des(0), F_0_des(1), F_0_des(2));
+//  ROS_WARN_THROTTLE(1, "k_pos_0:    %2.2f", k_pos_0);
 //  ROS_WARN_THROTTLE(1, "m_0_: %2.2f", m_0_);
-//  ROS_WARN_THROTTLE(1, "e_vel_0: [%2.2f, %2.2f, %2.2f]", e_vel_0(0), e_vel_0(1), e_vel_0(2));
-//  ROS_WARN_THROTTLE(1, "e_R_0: [%2.2f, %2.2f, %2.2f]", e_R_0(0), e_R_0(1), e_R_0(2));
+//  ROS_WARN_THROTTLE(1, "e_vel_0: [%2.2f, %2.2f, %2.2f]", e_vel_0(0), e_vel_0(1), e_vel_0(2)); //  ROS_WARN_THROTTLE(1, "e_R_0: [%2.2f, %2.2f, %2.2f]", e_R_0(0), e_R_0(1), e_R_0(2));
 //  ROS_WARN_THROTTLE(1, "e_Omega_0: [%2.2f, %2.2f, %2.2f]", e_Omega_0(0), e_Omega_0(1), e_Omega_0(2));
 //  ROS_WARN_THROTTLE(t_db, "========================================");
 //  ROS_WARN_THROTTLE(t_db, "controller a_i = [%2.2f, %2.2f, %2.2f]", a_i(0), a_i(1), a_i(2));
 //  ROS_WARN_THROTTLE(1, "w_i_: [%2.2f, %2.2f, %2.2f]", w_i_(0), w_i_(1), w_i_(2));
 //  ROS_WARN_THROTTLE(1, "u_i_prl: [%2.2f, %2.2f, %2.2f]", u_i_prl(0), u_i_prl(1), u_i_prl(2));
 //  ROS_WARN("dt:              %2.9f", dt);
-//  ROS_WARN_THROTTLE(t_db, "F_0_des:    [%2.2f, %2.2f, %2.2f]", F_0_des(0), F_0_des(1), F_0_des(2));
 //  ROS_WARN_THROTTLE(t_db, "M_0_des_:    [%2.2f, %2.2f, %2.2f]", M_0_des_(0), M_0_des_(1), M_0_des_(2));
 //  ROS_WARN_THROTTLE(t_db, "mu_i_des:    [%2.4f, %2.4f, %2.4f]", mu_i_des(0), mu_i_des(1), mu_i_des(2));
 //  ROS_WARN_THROTTLE(t_db, "mu_i:        [%2.4f, %2.4f, %2.4f]", mu_i(0), mu_i(1), mu_i(2));
