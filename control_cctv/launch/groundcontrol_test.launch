@@ -43,7 +43,7 @@
       <remap from="~F_0_des_topic"  to="/$(arg quad_name)/control_cctv/F_0_des"/>
       <remap from="~M_0_des_topic"  to="/$(arg quad_name)/control_cctv/M_0_des"/>
       <remap from="~q_i_des_topic"  to="/$(arg quad_name)/control_cctv/q_i_des"/>
-      <param name="fixed_frame_id" value="simulator"/>
+      <param name="fixed_frame_id" value="mocap"/>
       <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
     </node>
 
