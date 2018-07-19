@@ -53,6 +53,10 @@
       output="screen">
       <param name="mesh_resource" value="package://mesh_visualization/mesh/hummingbird.mesh"/>
       <remap from="~input" to="$(arg quad_odom_topic)"/>
+      <param name="color/r" value="0.0"/>
+      <param name="color/g" value="0.0"/>
+      <param name="color/b" value="1.0"/>
+      <param name="color/a" value="1.0"/>
     </node>
 
     <node pkg="rviz"
