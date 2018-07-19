@@ -198,7 +198,6 @@ void NodeletControlCCTV::publishSO3Command()
 
 //    viz_cctv_control();
 
-    pub_viz();
     break;
   }
   case CCTV_CONTROL: {
@@ -232,7 +231,6 @@ void NodeletControlCCTV::publishSO3Command()
     so3_command->angular_velocity.y = ang_vel(1);
     so3_command->angular_velocity.z = ang_vel(2);
 
-    pub_viz();
     break;
   }
 
@@ -354,6 +352,8 @@ void NodeletControlCCTV::estimate_cable_state(void){
   cctv_controller_.set_q_i(q_i_);
   cctv_controller_.set_q_i_dot(q_i_dot_);
   cctv_controller_.set_w_i(w_i_);
+
+  pub_viz();
 }
 
 void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd)
