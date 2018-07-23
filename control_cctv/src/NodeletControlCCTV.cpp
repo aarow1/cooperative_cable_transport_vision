@@ -278,7 +278,7 @@ void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPt
   cctv_controller_.set_Omega_0(Omega_0_);
   estimate_cable_state();
 
-  publishSO3Command();
+//  publishSO3Command();
 }
 
 
