@@ -111,7 +111,7 @@
 	  		    type="quadrotor_ukf"
 		        name="quadrotor_ukf"
 		        output="screen">
-		        <remap from="~odom_slam" to="vio_pose"/>
+            <remap from="~odom_slam" to="$(arg odotopic)"/>
 		        <remap from="~imu" to="imu"/>
 	      	</node>
 

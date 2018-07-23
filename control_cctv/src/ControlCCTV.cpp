@@ -194,7 +194,9 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   q_i_des_dot_last = q_i_des_dot;
 
   // Desired cable angular velocity
-  static Vector3d w_i_des = q_i_des.cross(q_i_des_dot);   // (eq 26.5)
+//  static Vector3d w_i_des = q_i_des.cross(q_i_des_dot);   // (eq 26.5)
+  Vector3d w_i_des;
+  w_i_des.setZero();
 //  const Vector3d w_i_des_dot = (w_i_des - w_i_des_last) / dt; // Second numerical derivative is too noisy
 
   const Matrix3d q_i_hat = VIOUtil::getSkew(q_i_);
