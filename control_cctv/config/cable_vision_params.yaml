@@ -8,6 +8,10 @@ cable_length: 0.5
 my_index: 0
 
 k_pos_0: {x: 1.8, y: 1.8, z: 6.0}
+ki_pos_0: {x: 0.0, y: 0.0, z: 0.0}
+
+max_pos_0_int = 0.5
+
 k_vel_0: 0.7
 k_R_0: 0.0
 k_Omega_0: 0.0

@@ -54,6 +54,7 @@ class ControlCCTV
                         const Vector3d &des_alpha_0,
                         const double &des_yaw_i,
                         const Vector3d &k_pos_0,
+                        const Vector3d &ki_pos_0,
                         const double &k_vel_0,
                         const double &k_R_0,
                         const double &k_Omega_0,
@@ -76,6 +77,9 @@ class ControlCCTV
   Vector3d e_Omega_0  = Vector3d::Zero();
   Vector3d e_q_i    = Vector3d::Zero();
   Vector3d e_w_i    = Vector3d::Zero();
+
+  Vector3d pos_0_int = Vector3d::Zero();
+  double max_pos_0_int = 0;
 
   Vector3d F_0_des  = Vector3d::Zero();
   Vector3d M_0_des  = Vector3d::Zero();

@@ -95,6 +95,8 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d des_Omega_0_, des_alpha_0_;
 
   Eigen::Vector3d k_pos_0_;
+  Eigen::Vector3d ki_pos_0_;
+  double max_pos_0_int;
   double k_vel_0_, k_R_0_, k_Omega_0_, k_q_, k_w_;
   double des_yaw_i_, des_yaw_dot_i_;
   double current_yaw_;
@@ -156,7 +158,7 @@ void NodeletControlCCTV::publishSO3Command()
     kib = kib_;
   }
 
-  bool DB_CTRL_SWITCH = 1;
+  // bool DB_CTRL_SWITCH = 1;
 
   quadrotor_msgs::SO3Command::Ptr so3_command(new quadrotor_msgs::SO3Command);
   so3_command->header.stamp = ros::Time::now();
@@ -191,6 +193,7 @@ void NodeletControlCCTV::publishSO3Command()
                                des_alpha_0_,
                                des_yaw_i_,
                                k_pos_0_,
+                               ki_pos_0_,
                                k_vel_0_,
                                k_R_0_,
                                k_Omega_0_,
@@ -211,6 +214,7 @@ void NodeletControlCCTV::publishSO3Command()
                                des_alpha_0_,
                                des_yaw_i_,
                                k_pos_0_,
+                               ki_pos_0_,
                                k_vel_0_,
                                k_R_0_,
                                k_Omega_0_,
@@ -503,6 +507,11 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_pos_0/x", k_pos_0_(0),      0.0);
   priv_nh.param("k_pos_0/y", k_pos_0_(1),      0.0);
   priv_nh.param("k_pos_0/z", k_pos_0_(2),      0.0);
+  priv_nh.param("ki_pos_0/x", ki_pos_0_(0),      0.0);
+  priv_nh.param("ki_pos_0/y", ki_pos_0_(1),      0.0);
+  priv_nh.param("ki_pos_0/z", ki_pos_0_(2),      0.0);
+  priv_nh.param("max_pos_0_int", max_pos_0_int,      0.0);
+  
   priv_nh.param("k_vel_0", k_vel_0_,      0.0);
   priv_nh.param("k_R_0", k_R_0_,          0.0);
   priv_nh.param("k_Omega_0", k_Omega_0_,  0.0);
