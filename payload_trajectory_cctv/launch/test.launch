@@ -3,9 +3,4 @@
     type="simple_payload_trajectory"
     name="simple_payload_trajectory">
   </node>
-
-  <node pkg="rviz"
-    type="rviz"
-    name="rviz"
-    args="-d $(find payload_trajectory_cctv)/config/test.rviz"/>
 </launch>
