@@ -94,8 +94,8 @@ void SO3Control::calculateControl(const Eigen::Vector3d &des_pos,
    }
    //ROS_DEBUG_THROTTLE(2, "Integrated body disturbance compensation [N]: {x: %2.2f, y: %2.2f, z: %2.2f}", pos_int_b_(0), pos_int_b_(1), pos_int_b_(2));
 
-  const Eigen::Vector3d acc_grav = g_ * Eigen::Vector3d::UnitZ();
-  const Eigen::Vector3d acc_control = kx.asDiagonal() * e_pos + kv.asDiagonal() * e_vel + pos_int_ + des_acc;
+  const Eigen::Vector3d acc_grav = g_ * Eigen::Vector3d::UnitZ() + des_acc;
+  const Eigen::Vector3d acc_control = ((kx.asDiagonal()*e_pos) + (kv.asDiagonal()*e_vel) + pos_int_) / (mass_);
   Eigen::Vector3d acc_total = acc_control + acc_grav;
 
   // Check and limit tilt angle

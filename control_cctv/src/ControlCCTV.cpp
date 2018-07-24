@@ -94,7 +94,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
                       const Vector3d &des_Omega_0,
                       const Vector3d &des_alpha_0,
                       const double &des_yaw_i,
-                      const double &k_pos_0,
+                      const Vector3d &k_pos_0,
+                      const Vector3d &ki_pos_0,
                       const double &k_vel_0,
                       const double &k_R_0,
                       const double &k_Omega_0,
@@ -116,10 +117,19 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   e_R_0       = 0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
   e_Omega_0   = Omega_0_ - (R_0_.transpose() * des_R_0 * des_Omega_0);
 
+  // Do pos_0 integral
+  for (int i=0; i<3; i++){
+    if(k_pos_0(i) !=0){
+      pos_0_int(i) += ki_pos_0(i)*e_pos_0(i);
+    }
+    CLAMP(pos_0_int(i), -max_pos_0_int, max_pos_0_int);
+  }
+
   // Payload force and moment (eq. 20, 21) TODO: add integral terms
   F_0_des = m_0_ * (
-          (-1.0 * k_pos_0 * e_pos_0)  // P control
+          (-1.0 * k_pos_0.cwiseProduct(e_pos_0))// P control
         + (-1.0 * k_vel_0 * e_vel_0)  // D control
+        + (-1.0 * pos_0_int)          // I control
         + (des_acc_0)                 // Feedforward Acceleration
         + (g_ * Vector3d::UnitZ())    // Gravity Compensation
         );
