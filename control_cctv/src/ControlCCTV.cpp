@@ -94,7 +94,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
                       const Vector3d &des_Omega_0,
                       const Vector3d &des_alpha_0,
                       const double &des_yaw_i,
-                      const double &k_pos_0,
+                      const Vector3d &k_pos_0,
                       const double &k_vel_0,
                       const double &k_R_0,
                       const double &k_Omega_0,
@@ -118,7 +118,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // Payload force and moment (eq. 20, 21) TODO: add integral terms
   F_0_des = m_0_ * (
-          (-1.0 * k_pos_0 * e_pos_0)  // P control
+          (-1.0 * k_pos_0.cwiseProduct(e_pos_0))// P control
         + (-1.0 * k_vel_0 * e_vel_0)  // D control
         + (des_acc_0)                 // Feedforward Acceleration
         + (g_ * Vector3d::UnitZ())    // Gravity Compensation
@@ -194,7 +194,9 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   q_i_des_dot_last = q_i_des_dot;
 
   // Desired cable angular velocity
-  static Vector3d w_i_des = q_i_des.cross(q_i_des_dot);   // (eq 26.5)
+//  static Vector3d w_i_des = q_i_des.cross(q_i_des_dot);   // (eq 26.5)
+  Vector3d w_i_des;
+  w_i_des.setZero();
 //  const Vector3d w_i_des_dot = (w_i_des - w_i_des_last) / dt; // Second numerical derivative is too noisy
 
   const Matrix3d q_i_hat = VIOUtil::getSkew(q_i_);
@@ -239,9 +241,13 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
 //  const double t_db = 0.1;
 
-//  ROS_WARN_THROTTLE(1, "e_pos_0:    [%2.2f, %2.2f, %2.2f]", e_pos_0(0), e_pos_0(1), e_pos_0(2));
+  const Vector3d f_kp_pos_0 = -1.0 * k_pos_0.cwiseProduct(e_pos_0);
+ROS_WARN_THROTTLE(1, "pos_0_:    [%2.2f, %2.2f, %2.2f]", pos_0_(0), pos_0_(1), pos_0_(2));
+ROS_WARN_THROTTLE(1, "des_pos_0:    [%2.2f, %2.2f, %2.2f]", des_pos_0(0), des_pos_0(1), des_pos_0(2));
+ROS_WARN_THROTTLE(1, "e_pos_0:    [%2.2f, %2.2f, %2.2f]", e_pos_0(0), e_pos_0(1), e_pos_0(2));
+ROS_WARN_THROTTLE(1, "k_pos_0:    [%2.2f, %2.2f, %2.2f]", k_pos_0(0), k_pos_0(1), k_pos_0(2));
+ROS_WARN_THROTTLE(1, "f_kp_pos_0:    [%2.2f, %2.2f, %2.2f]", f_kp_pos_0(0), f_kp_pos_0(1), f_kp_pos_0(2));
 //  ROS_WARN_THROTTLE(1, "F_0_des:    [%2.2f, %2.2f, %2.2f]", F_0_des(0), F_0_des(1), F_0_des(2));
-//  ROS_WARN_THROTTLE(1, "k_pos_0:    %2.2f", k_pos_0);
 //  ROS_WARN_THROTTLE(1, "m_0_: %2.2f", m_0_);
 //  ROS_WARN_THROTTLE(1, "e_vel_0: [%2.2f, %2.2f, %2.2f]", e_vel_0(0), e_vel_0(1), e_vel_0(2)); //  ROS_WARN_THROTTLE(1, "e_R_0: [%2.2f, %2.2f, %2.2f]", e_R_0(0), e_R_0(1), e_R_0(2));
 //  ROS_WARN_THROTTLE(1, "e_Omega_0: [%2.2f, %2.2f, %2.2f]", e_Omega_0(0), e_Omega_0(1), e_Omega_0(2));
