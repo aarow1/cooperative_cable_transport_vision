@@ -251,9 +251,13 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
 //  const double t_db = 0.1;
 
-//  ROS_WARN_THROTTLE(1, "e_pos_0:    [%2.2f, %2.2f, %2.2f]", e_pos_0(0), e_pos_0(1), e_pos_0(2));
+  const Vector3d f_kp_pos_0 = -1.0 * k_pos_0.cwiseProduct(e_pos_0);
+ROS_WARN_THROTTLE(1, "pos_0_:    [%2.2f, %2.2f, %2.2f]", pos_0_(0), pos_0_(1), pos_0_(2));
+ROS_WARN_THROTTLE(1, "des_pos_0:    [%2.2f, %2.2f, %2.2f]", des_pos_0(0), des_pos_0(1), des_pos_0(2));
+ROS_WARN_THROTTLE(1, "e_pos_0:    [%2.2f, %2.2f, %2.2f]", e_pos_0(0), e_pos_0(1), e_pos_0(2));
+ROS_WARN_THROTTLE(1, "k_pos_0:    [%2.2f, %2.2f, %2.2f]", k_pos_0(0), k_pos_0(1), k_pos_0(2));
+ROS_WARN_THROTTLE(1, "f_kp_pos_0:    [%2.2f, %2.2f, %2.2f]", f_kp_pos_0(0), f_kp_pos_0(1), f_kp_pos_0(2));
 //  ROS_WARN_THROTTLE(1, "F_0_des:    [%2.2f, %2.2f, %2.2f]", F_0_des(0), F_0_des(1), F_0_des(2));
-//  ROS_WARN_THROTTLE(1, "k_pos_0:    %2.2f", k_pos_0);
 //  ROS_WARN_THROTTLE(1, "m_0_: %2.2f", m_0_);
 //  ROS_WARN_THROTTLE(1, "e_vel_0: [%2.2f, %2.2f, %2.2f]", e_vel_0(0), e_vel_0(1), e_vel_0(2)); //  ROS_WARN_THROTTLE(1, "e_R_0: [%2.2f, %2.2f, %2.2f]", e_R_0(0), e_R_0(1), e_R_0(2));
 //  ROS_WARN_THROTTLE(1, "e_Omega_0: [%2.2f, %2.2f, %2.2f]", e_Omega_0(0), e_Omega_0(1), e_Omega_0(2));
