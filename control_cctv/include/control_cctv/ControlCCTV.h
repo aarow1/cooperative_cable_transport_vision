@@ -53,7 +53,8 @@ class ControlCCTV
                         const Vector3d &des_Omega_0,
                         const Vector3d &des_alpha_0,
                         const double &des_yaw_i,
-                        const double &k_pos_0,
+                        const Vector3d &k_pos_0,
+                        const Vector3d &ki_pos_0,
                         const double &k_vel_0,
                         const double &k_R_0,
                         const double &k_Omega_0,
@@ -70,19 +71,22 @@ class ControlCCTV
   const Vector3d     &get_u_i_prp();
 
   // debugging outputs of controller TODO make these private
-  Vector3d e_pos_0;
-  Vector3d e_vel_0;
-  Vector3d e_R_0;
-  Vector3d e_Omega_0;
-  Vector3d e_q_i;
-  Vector3d e_w_i;
+  Vector3d e_pos_0  = Vector3d::Zero();
+  Vector3d e_vel_0  = Vector3d::Zero();
+  Vector3d e_R_0    = Vector3d::Zero();
+  Vector3d e_Omega_0  = Vector3d::Zero();
+  Vector3d e_q_i    = Vector3d::Zero();
+  Vector3d e_w_i    = Vector3d::Zero();
 
-  Vector3d F_0_des;
-  Vector3d M_0_des;
-  Vector3d q_i_des;
-  Vector3d u_i_;
-  Vector3d u_i_prl;
-  Vector3d u_i_prp;
+  Vector3d pos_0_int = Vector3d::Zero();
+  double max_pos_0_int = 0;
+
+  Vector3d F_0_des  = Vector3d::Zero();
+  Vector3d M_0_des  = Vector3d::Zero();
+  Vector3d q_i_des  = -Vector3d::UnitZ();
+  Vector3d u_i_     = Vector3d::Zero();
+  Vector3d u_i_prl  = Vector3d::Zero();
+  Vector3d u_i_prp  = Vector3d::Zero();
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
 
