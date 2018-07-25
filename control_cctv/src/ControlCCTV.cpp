@@ -122,7 +122,15 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
     if(k_pos_0(i) !=0){
       pos_0_int(i) += ki_pos_0(i)*e_pos_0(i);
     }
-    CLAMP(pos_0_int(i), -max_pos_0_int, max_pos_0_int);
+    //CLAMP(pos_0_int(i), -max_pos_0_int, max_pos_0_int);
+    if(pos_0_int(i) > max_pos_0_int){
+      pos_0_int(i) = max_pos_0_int;
+      ROS_WARN_THROTTLE(0.5, "pos int %i is saturated at %2.2f", i, pos_0_int(i));
+    }
+    else if(pos_0_int(i) < -max_pos_0_int){
+      pos_0_int(i) = -max_pos_0_int;
+      ROS_WARN_THROTTLE(0.5, "pos int %i is saturated at %2.2f", i, pos_0_int(i));
+    }
   }
 
   // Payload force and moment (eq. 20, 21) TODO: add integral terms
@@ -166,14 +174,14 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // Calculate Attachment point acceleration (eq. 16)
   const Vector3d a_i = (des_acc_0)
-      + (g_ * Vector3d::UnitZ())
-      + (R_0_ * VIOUtil::getSkew(Omega_0_) * VIOUtil::getSkew(Omega_0_) * rho_.block<3,1>(0,idx_))
-      - (R_0_ * VIOUtil::getSkew(rho_.block<3,1>(0,idx_)) * des_alpha_0);
+      + (g_ * Vector3d::UnitZ());
+      // + (R_0_ * VIOUtil::getSkew(Omega_0_) * VIOUtil::getSkew(Omega_0_) * rho_.block<3,1>(0,idx_))
+      // - (R_0_ * VIOUtil::getSkew(rho_.block<3,1>(0,idx_)) * des_alpha_0);
 
   // prl component of control (eq. 17)
   u_i_prl = mu_i
-      + (m_i_ * l_i_ * (w_i_.norm() * w_i_.norm()) * q_i_)
-      + (m_i_ * q_i_ * q_i_.transpose() * a_i);
+      // + (m_i_ * l_i_ * (w_i_.norm() * w_i_.norm()) * q_i_)
+       + (m_i_ * q_i_ * q_i_.transpose() * a_i);
 
   //==================================//
   // Calculate perpedicular component //
@@ -257,7 +265,8 @@ ROS_WARN_THROTTLE(1, "des_pos_0:    [%2.2f, %2.2f, %2.2f]", des_pos_0(0), des_po
 ROS_WARN_THROTTLE(1, "e_pos_0:    [%2.2f, %2.2f, %2.2f]", e_pos_0(0), e_pos_0(1), e_pos_0(2));
 ROS_WARN_THROTTLE(1, "k_pos_0:    [%2.2f, %2.2f, %2.2f]", k_pos_0(0), k_pos_0(1), k_pos_0(2));
 ROS_WARN_THROTTLE(1, "f_kp_pos_0:    [%2.2f, %2.2f, %2.2f]", f_kp_pos_0(0), f_kp_pos_0(1), f_kp_pos_0(2));
-//  ROS_WARN_THROTTLE(1, "F_0_des:    [%2.2f, %2.2f, %2.2f]", F_0_des(0), F_0_des(1), F_0_des(2));
+ROS_WARN_THROTTLE(1, "F_0_des:    [%2.2f, %2.2f, %2.2f]", F_0_des(0), F_0_des(1), F_0_des(2));
+ROS_WARN_THROTTLE(1, "u_i_: [%2.2f, %2.2f, %2.2f]", u_i_(0), u_i_(1), u_i_(2));
 //  ROS_WARN_THROTTLE(1, "m_0_: %2.2f", m_0_);
 //  ROS_WARN_THROTTLE(1, "e_vel_0: [%2.2f, %2.2f, %2.2f]", e_vel_0(0), e_vel_0(1), e_vel_0(2)); //  ROS_WARN_THROTTLE(1, "e_R_0: [%2.2f, %2.2f, %2.2f]", e_R_0(0), e_R_0(1), e_R_0(2));
 //  ROS_WARN_THROTTLE(1, "e_Omega_0: [%2.2f, %2.2f, %2.2f]", e_Omega_0(0), e_Omega_0(1), e_Omega_0(2));
@@ -295,7 +304,6 @@ ROS_WARN_THROTTLE(1, "f_kp_pos_0:    [%2.2f, %2.2f, %2.2f]", f_kp_pos_0(0), f_kp
 //  ROS_WARN_THROTTLE(1, "perp_db: [%2.2f, %2.2f, %2.2f]", perp_db(2,0), perp_db(2,1), perp_db(2,2));
 //  ROS_WARN_THROTTLE(t_db, "u_i_prl: [%2.2f, %2.2f, %2.2f]", u_i_prl(0), u_i_prl(1), u_i_prl(2));
 //  ROS_WARN_THROTTLE(t_db, "u_i_prp: [%2.2f, %2.2f, %2.2f]", u_i_prp(0), u_i_prp(1), u_i_prp(2));
-//  ROS_WARN_THROTTLE(1, "u_i_: [%2.2f, %2.2f, %2.2f]", u_i_(0), u_i_(1), u_i_(2));
 
   ROS_ERROR_COND(std::isnan(orientation_.x()), "ORIENTATION x IS NAN");
   ROS_ERROR_COND(std::isnan(orientation_.y()), "ORIENTATION y IS NAN");
