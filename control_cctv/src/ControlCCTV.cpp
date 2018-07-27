@@ -100,7 +100,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
                       const double &k_R_0,
                       const double &k_Omega_0,
                       const double &k_q,
-                      const double &k_w)
+                      const double &k_w,
+                      const double &k_qi)
 {
   // Calculate dt
   static ros::Time t_last_control = ros::Time::now();
@@ -224,10 +225,17 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   e_q_i = q_i_des.cross(q_i_);
   e_w_i = w_i_ + q_i_hat_2 * w_i_des;
 
+  // Cable integral
+  e_q_i_int = e_q_i_int + e_q_i*dt;
+  if(e_q_i_int.norm() > max_e_q_i_int){
+    e_q_i_int = max_e_q_i_int * e_q_i_int.normalized();
+  }
+
   // prp component of control <eq 27>
   u_i_prp = (m_i_ * l_i_ * q_i_hat) * (
           (-1.0 * k_q *e_q_i)             // P control
         + (-1.0 * k_w *e_w_i)             // D control
+        + (-1.0 * ki_q * e_q_i_int)
 //        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
 //        - (q_i_hat_2 *w_i_des_dot)      // sketchy double derivative
          );

@@ -101,7 +101,7 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d k_pos_0_;
   Eigen::Vector3d ki_pos_0_;
   double max_pos_0_int;
-  double k_vel_0_, k_R_0_, k_Omega_0_, k_q_, k_w_;
+  double k_vel_0_, k_R_0_, k_Omega_0_, k_q_, k_w_, k_qi_;
   double des_yaw_i_, des_yaw_dot_i_;
   double current_yaw_;
   bool enable_motors_, use_external_yaw_, have_quad_odom_, have_payload_odom_;
@@ -208,7 +208,8 @@ void NodeletControlCCTV::publishSO3Command()
                                k_R_0_,
                                k_Omega_0_,
                                k_q_,
-                               k_w_);
+                               k_w_,
+                               k_qi_);
 
 //    viz_cctv_control();
 
@@ -229,7 +230,8 @@ void NodeletControlCCTV::publishSO3Command()
                                k_R_0_,
                                k_Omega_0_,
                                k_q_,
-                               k_w_);
+                               k_w_,
+                               k_qi_);
 
     const Eigen::Vector3d &force          = cctv_controller_.getComputedForce();
     const Eigen::Quaterniond &orientation = cctv_controller_.getComputedOrientation();
@@ -556,6 +558,7 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_Omega_0", k_Omega_0_,  0.0);
   priv_nh.param("k_q", k_q_,              0.0);
   priv_nh.param("k_w", k_w_,              0.0);
+  priv_nh.param("k_qi", k_qi_,            0.0);
 
   priv_nh.param("tau_q_i",      tau_q_i,       0.05);
   priv_nh.param("tau_q_i_dot",  tau_q_i_dot,   0.05);
