@@ -209,15 +209,7 @@ void NodeletControlCCTV::publishSO3Command()
                                k_Omega_0_,
                                k_q_,
                                k_w_,
-<<<<<<< HEAD
-<<<<<<< HEAD
                                ki_q_);
-=======
-                               k_qi_);
->>>>>>> 466850ca7253b8acba09754608399262a2767269
-=======
-                               k_qi_);
->>>>>>> 466850ca7253b8acba09754608399262a2767269
 
 //    viz_cctv_control();
 
@@ -239,15 +231,7 @@ void NodeletControlCCTV::publishSO3Command()
                                k_Omega_0_,
                                k_q_,
                                k_w_,
-<<<<<<< HEAD
-<<<<<<< HEAD
                                ki_q_);
-=======
-                               k_qi_);
->>>>>>> 466850ca7253b8acba09754608399262a2767269
-=======
-                               k_qi_);
->>>>>>> 466850ca7253b8acba09754608399262a2767269
 
     const Eigen::Vector3d &force          = cctv_controller_.getComputedForce();
     const Eigen::Quaterniond &orientation = cctv_controller_.getComputedOrientation();
@@ -578,15 +562,7 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_Omega_0", k_Omega_0_,  0.0);
   priv_nh.param("k_q", k_q_,              0.0);
   priv_nh.param("k_w", k_w_,              0.0);
-<<<<<<< HEAD
-<<<<<<< HEAD
   priv_nh.param("ki_q", ki_q_,            0.0);
-=======
-  priv_nh.param("k_qi", k_qi_,            0.0);
->>>>>>> 466850ca7253b8acba09754608399262a2767269
-=======
-  priv_nh.param("k_qi", k_qi_,            0.0);
->>>>>>> 466850ca7253b8acba09754608399262a2767269
 
   priv_nh.param("tau_q_i",      tau_q_i,       0.05);
   priv_nh.param("tau_q_i_dot",  tau_q_i_dot,   0.05);
