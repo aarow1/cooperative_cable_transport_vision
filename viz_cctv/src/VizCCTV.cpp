@@ -350,7 +350,7 @@ visualization_msgs::Marker arrow_marker(std_msgs::Header msg_header){
   marker.id = 0;
   marker.type = visualization_msgs::Marker::ARROW;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.lifetime = ros::Duration();
+  marker.lifetime = ros::Duration(10);
 
   // marker appearance
   marker.scale.x = 0.05;  // shaft girth
