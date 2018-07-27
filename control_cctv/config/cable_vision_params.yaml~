@@ -9,18 +9,13 @@ my_index: 0
 
 max_pos_0_int: 1.0
 
-k_pos_0: {x: 0.1, y: 0.1, z: 15.0}
-ki_pos_0: {x: 0.00, y: 0.00, z: 0.00}
-k_vel_0: 0.0
+k_pos_0: {x: 0.8, y: 0.8, z: 10.0}
+ki_pos_0: {x: 0.001, y: 0.001, z: 0.001}
+k_vel_0: 0.1
 k_R_0: 0.0
 k_Omega_0: 0.0
-k_q: 40.0
-k_w: 0.55
-
-tau_q_i: 0.008
-tau_q_i_dot: 0.008
-tau_w_i: 0.008
-
+k_q: 30.0
+k_w: 0.20
 pl_vel_lowpass_alpha: 0.05
 pl_vel_jumpmax: 0.5
 
