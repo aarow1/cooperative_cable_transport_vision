@@ -215,7 +215,7 @@ void NodeletControlCCTV::publishSO3Command()
     break;
   }
   case CCTV_CONTROL: {
-    ROS_DEBUG_THROTTLE(1, "NodeletControlCCTV - Using cctv controller to publish s03 command");
+    ROS_INFO_THROTTLE(1, "NodeletControlCCTV - Using cctv controller to publish s03 command");
     cctv_controller_.calculateControl(des_pos_0_,
                                des_vel_0_,
                                des_acc_0_,
@@ -338,7 +338,7 @@ void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &
     }
     position_cmd_updated_ = false;
   }
-  publishSO3Command();
+  // publishSO3Command();
 }
 
 //------------------------------------------------------------------------------------------------
@@ -375,8 +375,6 @@ void NodeletControlCCTV::estimate_cable_state(void){
   static ros::Time t_last = ros::Time(0);
   ros::Time t_now = ros::Time::now();
   double dt = (t_now - t_last).toSec();
-  ROS_WARN("t_last is: %2.2f", t_last.toSec());
-  ROS_WARN("dt is: %2.4f", dt);
   t_last = t_now;
 
   double alpha_q_i      = dt / (tau_q_i + dt);
@@ -389,6 +387,12 @@ void NodeletControlCCTV::estimate_cable_state(void){
   q_i_dot_  = q_i_dot_  + alpha_q_i_dot * (q_i_dot_raw  - q_i_dot_);
   w_i_      = w_i_      + alpha_w_i     * (w_i_raw      - w_i_);
   q_i_.normalize();
+
+  for (int i =0; i<3; i++){
+    if(std::isnan(q_i_(i)))     q_i_      = -Eigen::Vector3d::UnitZ();
+    if(std::isnan(q_i_dot_(i))) q_i_dot_  = Eigen::Vector3d::Zero();
+    if(std::isnan(w_i_(i)))     w_i_      = Eigen::Vector3d::Zero();
+  }
 
 
   cctv_controller_.set_q_i(q_i_);
