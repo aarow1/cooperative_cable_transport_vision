@@ -383,7 +383,7 @@ void NodeletControlCCTV::estimate_cable_state(void){
   double alpha_q_i_dot  = dt / (tau_q_i_dot + dt);
   double alpha_w_i      = dt / (tau_w_i + dt);
 
-  ROS_WARN("alpha_q_i is: %2.4f", alpha_q_i);
+  // ROS_WARN("alpha_q_i is: %2.4f", alpha_q_i);
 
   q_i_      = q_i_      + alpha_q_i     * (q_i_raw      - q_i_);
   q_i_dot_  = q_i_dot_  + alpha_q_i_dot * (q_i_dot_raw  - q_i_dot_);

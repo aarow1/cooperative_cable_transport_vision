@@ -227,7 +227,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // Cable integral
   e_q_i_int = e_q_i_int + e_q_i*dt;
-  ROS_INFO_THROTTLE("q i int norm is %2.2f", e_q_i_int.norm());
+  ROS_INFO_THROTTLE(0.2, "q i int norm is %2.2f", e_q_i_int.norm());
   if(e_q_i_int.norm() > max_e_q_i_int){
     ROS_WARN("q i int is saturated_");
     e_q_i_int = max_e_q_i_int * e_q_i_int.normalized();

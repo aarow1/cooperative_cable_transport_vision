@@ -83,7 +83,7 @@ class ControlCCTV
   double max_pos_0_int = 1.0;
 
   Vector3d e_q_i_int = Vector3d::Zero();
-  double max_e_q_i_int = 0.5;
+  double max_e_q_i_int = 1.0;
 
 
   Vector3d F_0_des  = Vector3d::Zero();
