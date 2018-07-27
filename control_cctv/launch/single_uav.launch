@@ -2,14 +2,14 @@
 
   <arg name="robot_name" default="dragonfly11"/>
   <arg name="mass" default="0.250"/>
-  <arg name="vicon" default="1"/>
+  <arg name="vicon" default="0"/>
 	<arg name="vicon_fps" default="100"/>
 	<arg name="start_nodelet_manager" default="1"/>
 	<arg name="nodelet_manager_name" default="nodelet_manager_control"/>
   <arg name="sim" default="0"/>
-  <arg name="odotopic" value="/vicon/$(arg robot_name)/odom"/>
-<!--  <arg name="odotopic" value="/$(arg robot_name)/quadrotor_ukf/control_odom"/>-->
-  <arg name="pl_odom_topic" value="/vicon/pl11/odom" if="$(arg vicon)"/>
+  <arg name="odotopic" value="/vicon/$(arg robot_name)/odom"/> -->
+  <!-- <arg name="odotopic" value="/$(arg robot_name)/quadrotor_ukf/control_odom"/>-->
+  <arg name="pl_odom_topic" value="/vicon/pl11/odom"/>
 
     <group ns="$(arg robot_name)">
 
@@ -130,7 +130,7 @@
 	  		    type="quadrotor_ukf"
 		        name="quadrotor_ukf"
 		        output="screen">
-            <remap from="~odom_slam" to="$(arg odotopic)"/>
+            <remap from="~odom_slam" to="vio_pose"/>
 		        <remap from="~imu" to="imu"/>
 	      	</node>
 
