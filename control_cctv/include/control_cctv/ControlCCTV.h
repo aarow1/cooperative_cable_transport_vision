@@ -60,7 +60,7 @@ class ControlCCTV
                         const double &k_Omega_0,
                         const double &k_q,
                         const double &k_w,
-                        const double &k_qi);
+                        const double &ki_q);
 
 
   // Getters

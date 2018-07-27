@@ -101,7 +101,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
                       const double &k_Omega_0,
                       const double &k_q,
                       const double &k_w,
-                      const double &k_qi)
+                      const double &ki_q)
 {
   // Calculate dt
   static ros::Time t_last_control = ros::Time::now();
