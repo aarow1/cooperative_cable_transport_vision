@@ -210,7 +210,11 @@ void NodeletControlCCTV::publishSO3Command()
                                k_q_,
                                k_w_,
 <<<<<<< HEAD
+<<<<<<< HEAD
                                ki_q_);
+=======
+                               k_qi_);
+>>>>>>> 466850ca7253b8acba09754608399262a2767269
 =======
                                k_qi_);
 >>>>>>> 466850ca7253b8acba09754608399262a2767269
@@ -236,7 +240,11 @@ void NodeletControlCCTV::publishSO3Command()
                                k_q_,
                                k_w_,
 <<<<<<< HEAD
+<<<<<<< HEAD
                                ki_q_);
+=======
+                               k_qi_);
+>>>>>>> 466850ca7253b8acba09754608399262a2767269
 =======
                                k_qi_);
 >>>>>>> 466850ca7253b8acba09754608399262a2767269
@@ -571,7 +579,11 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_q", k_q_,              0.0);
   priv_nh.param("k_w", k_w_,              0.0);
 <<<<<<< HEAD
+<<<<<<< HEAD
   priv_nh.param("ki_q", ki_q_,            0.0);
+=======
+  priv_nh.param("k_qi", k_qi_,            0.0);
+>>>>>>> 466850ca7253b8acba09754608399262a2767269
 =======
   priv_nh.param("k_qi", k_qi_,            0.0);
 >>>>>>> 466850ca7253b8acba09754608399262a2767269
