@@ -64,6 +64,10 @@ class NodeletControlCCTV : public nodelet::Nodelet
   ros::Publisher q_i_dot_pub;
   ros::Publisher w_i_pub;
 
+  ros::Publisher q_i_raw_pub;
+  ros::Publisher q_i_dot_raw_pub;
+  ros::Publisher w_i_raw_pub;
+
   ros::Publisher u_i_pub, u_i_prl_pub, u_i_prp_pub;
 
   ros::Publisher e_pos_0_pub;
@@ -127,6 +131,11 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d     q_i_dot_;
   Eigen::Vector3d     w_i_;
 
+  Eigen::Vector3d   q_i_raw;
+  Eigen::Vector3d   q_i_dot_raw;
+  Eigen::Vector3d   w_i_raw;
+
+
   // Payload state
   Eigen::Vector3d     pos_0_;
   Eigen::Vector3d     vel_0_;
@@ -135,8 +144,9 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d     Omega_0_;
 
   // Filter constants
-  double vel_0_lowpass_alpha;
-  double vel_0_jumpmax;
+  double tau_q_i;
+  double tau_q_i_dot;
+  double tau_w_i;
 
   enum Controller {SO3_CONTROL, CCTV_CONTROL};
   Controller active_controller_ = SO3_CONTROL;
@@ -328,7 +338,7 @@ void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &
     }
     position_cmd_updated_ = false;
   }
-//  publishSO3Command();
+  publishSO3Command();
 }
 
 //------------------------------------------------------------------------------------------------
@@ -344,7 +354,9 @@ void NodeletControlCCTV::estimate_cable_state(void){
   pl_attach_ = p_attach_0;
   const Eigen::Vector3d p_attach_quad = (p_attach_0 - quad_pos_);
   if(p_attach_quad.norm() > 0.01){
-    q_i_ = p_attach_quad.normalized();
+    q_i_raw = p_attach_quad.normalized();
+  } else {
+    q_i_raw = q_i_;
   }
 //  ROS_INFO_THROTTLE(.5, "pos_0_: [%2.2f %2.2f %2.2f]", pos_0_(0), pos_0_(0), pos_0_(0));
 //  ROS_INFO_THROTTLE(.5, "quad_pos_: [%2.2f %2.2f %2.2f]", quad_pos_(0), quad_pos_(0), quad_pos_(0));
@@ -353,10 +365,31 @@ void NodeletControlCCTV::estimate_cable_state(void){
   // 2. calculate q_i_dot
   const Eigen::Vector3d v_attach_0 = vel_0_ + Omega_0_.cross(rho_i_);
   const Eigen::Vector3d v_attach_quad = v_attach_0 - quad_vel_;
-  q_i_dot_ = v_attach_quad / cable_length_;
+  q_i_dot_raw = v_attach_quad / cable_length_;
 
   // 3. calculate w_i (yikes)
-  w_i_ = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
+  w_i_raw = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
+
+
+  // Low pass filter all three
+  static ros::Time t_last = ros::Time(0);
+  ros::Time t_now = ros::Time::now();
+  double dt = (t_now - t_last).toSec();
+  ROS_WARN("t_last is: %2.2f", t_last.toSec());
+  ROS_WARN("dt is: %2.4f", dt);
+  t_last = t_now;
+
+  double alpha_q_i      = dt / (tau_q_i + dt);
+  double alpha_q_i_dot  = dt / (tau_q_i_dot + dt);
+  double alpha_w_i      = dt / (tau_w_i + dt);
+
+  ROS_WARN("alpha_q_i is: %2.4f", alpha_q_i);
+
+  q_i_      = q_i_      + alpha_q_i     * (q_i_raw      - q_i_);
+  q_i_dot_  = q_i_dot_  + alpha_q_i_dot * (q_i_dot_raw  - q_i_dot_);
+  w_i_      = w_i_      + alpha_w_i     * (w_i_raw      - w_i_);
+  q_i_.normalize();
+
 
   cctv_controller_.set_q_i(q_i_);
   cctv_controller_.set_q_i_dot(q_i_dot_);
@@ -426,9 +459,14 @@ void NodeletControlCCTV::pub_viz()
   pub_vec3(q_i_pub,         q_i_);
   pub_vec3(q_i_dot_pub,     q_i_dot_);
   pub_vec3(w_i_pub,         w_i_);
+
+  pub_vec3(q_i_raw_pub,         q_i_raw);
+  pub_vec3(q_i_dot_raw_pub,     q_i_dot_raw);
+  pub_vec3(w_i_raw_pub,         w_i_raw);
+
   pub_vec3(u_i_pub,         cctv_controller_.get_u_i());
-  pub_vec3(u_i_prl_pub,  cctv_controller_.get_u_i_prl());
-  pub_vec3(u_i_prp_pub,  cctv_controller_.get_u_i_prp());
+  pub_vec3(u_i_prl_pub,     cctv_controller_.get_u_i_prl());
+  pub_vec3(u_i_prp_pub,     cctv_controller_.get_u_i_prp());
 
   pub_vec3(e_pos_0_pub,     cctv_controller_.e_pos_0);
   pub_vec3(e_vel_0_pub,     cctv_controller_.e_vel_0);
@@ -520,8 +558,9 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_q", k_q_,              0.0);
   priv_nh.param("k_w", k_w_,              0.0);
 
-  priv_nh.param("vel_0_lowpass_alpha", vel_0_lowpass_alpha,  0.05);
-  priv_nh.param("vel_0_jumpmax", vel_0_jumpmax,  0.1);
+  priv_nh.param("tau_q_i",      tau_q_i,       0.05);
+  priv_nh.param("tau_q_i_dot",  tau_q_i_dot,   0.05);
+  priv_nh.param("tau_w_i",      tau_w_i,       0.05);
 
   // Retrieve attachment point params for all robots
   for (int i=0; i<n_bots_; i++){
@@ -560,6 +599,10 @@ void NodeletControlCCTV::onInit()
   q_i_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("q_i", 10);
   q_i_dot_pub       = priv_nh.advertise<geometry_msgs::Vector3Stamped>("q_i_dot", 10);
   w_i_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("w_i", 10);
+
+  q_i_raw_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("q_i_raw", 10);
+  q_i_dot_raw_pub       = priv_nh.advertise<geometry_msgs::Vector3Stamped>("q_i_dot_raw", 10);
+  w_i_raw_pub           = priv_nh.advertise<geometry_msgs::Vector3Stamped>("w_i_raw", 10);
 
   // controller debugging publishers
   e_pos_0_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("e_pos_0", 10);
