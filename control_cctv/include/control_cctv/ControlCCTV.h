@@ -59,7 +59,8 @@ class ControlCCTV
                         const double &k_R_0,
                         const double &k_Omega_0,
                         const double &k_q,
-                        const double &k_w);
+                        const double &k_w,
+                        const double &k_qi);
 
 
   // Getters
@@ -80,6 +81,10 @@ class ControlCCTV
 
   Vector3d pos_0_int = Vector3d::Zero();
   double max_pos_0_int = 1.0;
+
+  Vector3d e_q_i_int = Vector3d::Zero();
+  double max_e_q_i_int = 0.2;
+
 
   Vector3d F_0_des  = Vector3d::Zero();
   Vector3d M_0_des  = Vector3d::Zero();
