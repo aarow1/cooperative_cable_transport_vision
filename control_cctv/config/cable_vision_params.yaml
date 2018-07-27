@@ -19,6 +19,7 @@ k_R_0: 0.0
 k_Omega_0: 0.0
 k_q: 40.0
 ki_q: 10.0
+max_e_q_int: 2.0
 k_w: 0.8
 
 tau_q_i: 0.008

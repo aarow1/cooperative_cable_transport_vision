@@ -57,6 +57,10 @@ void ControlCCTV::set_n_bots (const int n_bots){
   n_bots_ = n_bots;
 }
 
+void ControlCCTV::set_max_e_q_int (const double max_e_q_int_in) {
+  max_e_q_int = max_e_q_int_in;
+}
+
 // State Setters
 void ControlCCTV::set_pos_0  (const Vector3d &pos_0){
   pos_0_ = pos_0;
@@ -85,6 +89,7 @@ void ControlCCTV::set_q_i_dot(const Vector3d &q_i_dot){
 void ControlCCTV::set_w_i    (const Vector3d &w_i){
   w_i_ = w_i;
 }
+
 
 
 void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
@@ -226,18 +231,18 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   e_w_i = w_i_ + q_i_hat_2 * w_i_des;
 
   // Cable integral
-  e_q_i_int = e_q_i_int + e_q_i*dt;
-  ROS_INFO_THROTTLE(0.2, "q i int norm is %2.2f", e_q_i_int.norm());
-  if(e_q_i_int.norm() > max_e_q_i_int){
+  e_q_int = e_q_int + e_q_i*dt;
+  ROS_INFO_THROTTLE(0.2, "q i int norm is %2.2f", e_q_int.norm());
+  if(e_q_int.norm() > max_e_q_int){
     ROS_WARN("q i int is saturated_");
-    e_q_i_int = max_e_q_i_int * e_q_i_int.normalized();
+    e_q_int = max_e_q_int * e_q_int.normalized();
   }
 
   // prp component of control <eq 27>
   u_i_prp = (m_i_ * l_i_ * q_i_hat) * (
           (-1.0 * k_q *e_q_i)             // P control
         + (-1.0 * k_w *e_w_i)             // D control
-        + (-1.0 * ki_q * e_q_i_int)
+        + (-1.0 * ki_q * e_q_int)
 //        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
 //        - (q_i_hat_2 *w_i_des_dot)      // sketchy double derivative
          );

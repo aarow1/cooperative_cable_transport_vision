@@ -34,6 +34,8 @@ class ControlCCTV
   void set_idx    (const int idx);
   void set_n_bots (const int n_bots);
 
+  void set_max_e_q_int (const double max_e_q_int_in);
+
   // State Setters
   void set_pos_0  (const Vector3d &pos_0);
   void set_vel_0  (const Vector3d &vel_0);
@@ -82,9 +84,8 @@ class ControlCCTV
   Vector3d pos_0_int = Vector3d::Zero();
   double max_pos_0_int = 1.0;
 
-  Vector3d e_q_i_int = Vector3d::Zero();
-  double max_e_q_i_int = 1.0;
-
+  Vector3d e_q_int = Vector3d::Zero();
+  double max_e_q_int = 1.0;
 
   Vector3d F_0_des  = Vector3d::Zero();
   Vector3d M_0_des  = Vector3d::Zero();

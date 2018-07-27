@@ -101,7 +101,8 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d k_pos_0_;
   Eigen::Vector3d ki_pos_0_;
   double max_pos_0_int;
-  double k_vel_0_, k_R_0_, k_Omega_0_, k_q_, k_w_, ki_q_;
+  double k_vel_0_, k_R_0_, k_Omega_0_, k_q_, k_w_;
+  double ki_q_, max_e_q_int;
   double des_yaw_i_, des_yaw_dot_i_;
   double current_yaw_;
   bool enable_motors_, use_external_yaw_, have_quad_odom_, have_payload_odom_;
@@ -564,6 +565,8 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_w", k_w_,              0.0);
   priv_nh.param("ki_q", ki_q_,            0.0);
 
+  priv_nh.param("max_e_q_int", max_e_q_int,  0.0);
+
   priv_nh.param("tau_q_i",      tau_q_i,       0.05);
   priv_nh.param("tau_q_i_dot",  tau_q_i_dot,   0.05);
   priv_nh.param("tau_w_i",      tau_w_i,       0.05);
@@ -591,6 +594,7 @@ void NodeletControlCCTV::onInit()
   cctv_controller_.set_g  (g_);
   cctv_controller_.set_idx(idx_);
   cctv_controller_.set_n_bots(n_bots_);
+  cctv_controller_.set_max_e_q_int (max_e_q_int);
 
   // Set cctv_controller des to zero TODO not this
 
