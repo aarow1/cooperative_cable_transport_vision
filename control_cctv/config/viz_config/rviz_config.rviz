@@ -9,7 +9,7 @@ Panels:
         - /Robot1
         - /q i1
       Splitter Ratio: 0.5
-    Tree Height: 356
+    Tree Height: 766
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -78,7 +78,7 @@ Visualization Manager:
       Marker Topic: /VizCCTV/q_i_viz
       Name: q i
       Namespaces:
-        basic_arrow: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -86,7 +86,7 @@ Visualization Manager:
       Marker Topic: /VizCCTV/w_i_viz
       Name: cable w
       Namespaces:
-        w_i_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -151,7 +151,7 @@ Visualization Manager:
       Marker Topic: /VizCCTV/q_i_des_viz
       Name: q i des
       Namespaces:
-        basic_arrow: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -159,7 +159,7 @@ Visualization Manager:
       Marker Topic: /VizCCTV/u_i_viz
       Name: u i
       Namespaces:
-        basic_arrow: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -167,7 +167,7 @@ Visualization Manager:
       Marker Topic: /VizCCTV/u_i_prl_viz
       Name: u i prl
       Namespaces:
-        basic_arrow: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -175,7 +175,7 @@ Visualization Manager:
       Marker Topic: /VizCCTV/u_i_prp_viz
       Name: u i prp
       Namespaces:
-        basic_arrow: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -183,7 +183,7 @@ Visualization Manager:
       Marker Topic: /VizCCTV/F_0_des_viz
       Name: f 0 does
       Namespaces:
-        basic_arrow: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -248,4 +248,4 @@ Window Geometry:
     collapsed: true
   Width: 960
   X: 960
-  Y: 27
+  Y: 38

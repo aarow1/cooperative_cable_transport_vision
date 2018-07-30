@@ -98,15 +98,15 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Matrix3d des_R_0_;
   Eigen::Vector3d des_Omega_0_, des_alpha_0_;
 
-  Eigen::Vector3d k_pos_0_;
+  Eigen::Vector3d kp_pos_0_;
   Eigen::Vector3d ki_pos_0_;
   double max_pos_0_int;
-  Eigen::Vector3d k_vel_0_;
+  Eigen::Vector3d kd_pos_0_;
 
   Eigen::Vector3d k_R_0_;
   Eigen::Vector3d k_Omega_0_;
 
-  double k_q_, k_w_;
+  double kp_q_, kd_q_;
   double ki_q_, max_e_q_int;
   double des_yaw_i_, des_yaw_dot_i_;
   double current_yaw_;
@@ -208,13 +208,13 @@ void NodeletControlCCTV::publishSO3Command()
                                des_Omega_0_,
                                des_alpha_0_,
                                des_yaw_i_,
-                               k_pos_0_,
+                               kp_pos_0_,
                                ki_pos_0_,
-                               k_vel_0_,
+                               kd_pos_0_,
                                k_R_0_,
                                k_Omega_0_,
-                               k_q_,
-                               k_w_,
+                               kp_q_,
+                               kd_q_,
                                ki_q_);
 
 //    viz_cctv_control();
@@ -230,13 +230,13 @@ void NodeletControlCCTV::publishSO3Command()
                                des_Omega_0_,
                                des_alpha_0_,
                                des_yaw_i_,
-                               k_pos_0_,
+                               kp_pos_0_,
                                ki_pos_0_,
-                               k_vel_0_,
+                               kd_pos_0_,
                                k_R_0_,
                                k_Omega_0_,
-                               k_q_,
-                               k_w_,
+                               kp_q_,
+                               kd_q_,
                                ki_q_);
 
     const Eigen::Vector3d &force          = cctv_controller_.getComputedForce();
@@ -556,18 +556,18 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("my_index", idx_, 0);
 
   // Get Payload gains
-  priv_nh.param("k_pos_0/x", k_pos_0_(0),      0.0);
-  priv_nh.param("k_pos_0/y", k_pos_0_(1),      0.0);
-  priv_nh.param("k_pos_0/z", k_pos_0_(2),      0.0);
+  priv_nh.param("kp_pos_0/x", kp_pos_0_(0),      0.0);
+  priv_nh.param("kp_pos_0/y", kp_pos_0_(1),      0.0);
+  priv_nh.param("kp_pos_0/z", kp_pos_0_(2),      0.0);
 
   priv_nh.param("ki_pos_0/x", ki_pos_0_(0),    0.0);
   priv_nh.param("ki_pos_0/y", ki_pos_0_(1),    0.0);
   priv_nh.param("ki_pos_0/z", ki_pos_0_(2),    0.0);
   priv_nh.param("max_pos_0_int", max_pos_0_int,      0.0);
   
-  priv_nh.param("k_vel_0/x", k_vel_0_(0),     0.0);
-  priv_nh.param("k_vel_0/y", k_vel_0_(1),     0.0);
-  priv_nh.param("k_vel_0/z", k_vel_0_(2),     0.0);
+  priv_nh.param("kd_pos_0/x", kd_pos_0_(0),     0.0);
+  priv_nh.param("kd_pos_0/y", kd_pos_0_(1),     0.0);
+  priv_nh.param("kd_pos_0/z", kd_pos_0_(2),     0.0);
 
   priv_nh.param("k_R_0/x", k_R_0_(0),         0.0);
   priv_nh.param("k_R_0/y", k_R_0_(1),         0.0);
@@ -577,9 +577,9 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_Omega_0/y", k_Omega_0_(1), 0.0);
   priv_nh.param("k_Omega_0/z", k_Omega_0_(2), 0.0);
 
-  priv_nh.param("kp_q", k_q_,              0.0);
-  priv_nh.param("kd_q", k_w_,              0.0);
-  priv_nh.param("ki_q", ki_q_,            0.0);
+  priv_nh.param("kp_q", kp_q_,              0.0);
+  priv_nh.param("kd_q", kd_q_,              0.0);
+  priv_nh.param("ki_q", ki_q_,              0.0);
 
   priv_nh.param("max_e_q_int", max_e_q_int,  0.0);
 
