@@ -57,9 +57,9 @@ class ControlCCTV
                         const double &des_yaw_i,
                         const Vector3d &k_pos_0,
                         const Vector3d &ki_pos_0,
-                        const double &k_vel_0,
-                        const double &k_R_0,
-                        const double &k_Omega_0,
+                        const Vector3d &k_vel_0,
+                        const Vector3d &k_R_0,
+                        const Vector3d &k_Omega_0,
                         const double &k_q,
                         const double &k_w,
                         const double &ki_q);

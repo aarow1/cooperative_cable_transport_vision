@@ -2,7 +2,7 @@
 
   <arg name="robot_name" default="dragonfly11"/>
   <arg name="mass" default="0.250"/>
-  <arg name="vicon" default="0"/>
+  <arg name="vicon" default="1"/>
 	<arg name="vicon_fps" default="100"/>
 	<arg name="start_nodelet_manager" default="1"/>
 	<arg name="nodelet_manager_name" default="nodelet_manager_control"/>
@@ -53,7 +53,7 @@
 	      output="screen">
 	      <rosparam file="$(find trackers_manager)/config/trackers.yaml"/>
 	      <rosparam file="$(find trackers_manager)/config/tracker_params.yaml"/>
-        <rosparam file="$(find state_control_vehicle)/config/QuadrotorQ2_gains.yaml"/>
+        <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
         <remap from="~odom" to="$(arg odotopic)"/>
 	      <remap from="~cmd" to="position_cmd"/>
 	    </node>
@@ -65,9 +65,10 @@
 	      name="control_cctv"
 	      required="true"
 	      output="screen">
-	      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
-        <rosparam file="$(find state_control_vehicle)/config/QuadrotorQ2_gains.yaml"/>
-	      <param name="mass" value="$(arg mass)"/>
+        <rosparam file="$(find control_cctv)/config/1robot_payload_params.yaml"/>
+        <rosparam file="$(find control_cctv)/config/cctv_gains_dragonfly.yaml"/>
+        <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
+        <param name="mass" value="$(arg mass)"/>
         <param name="use_external_yaw" value="false"/>
         <remap from="~quad_odom" to="$(arg odotopic)"/>
         <remap from="~payload_odom" to="$(arg pl_odom_topic)"/>
@@ -75,23 +76,6 @@
 	      <remap from="~so3_cmd" to="so3_cmd"/>
 	      <remap from="~motors" to="motors"/>
       </node>
-      
-      <!--
-      <node pkg="nodelet"
-        type="nodelet"
-        args="load so3_control/SO3ControlNodelet standalone_nodelet"
-        name="so3_control"
-        required="true"
-        output="screen">
-        <rosparam file="$(find state_control_vehicle)/config/QuadrotorQ2_gains.yaml"/>
-        <param name="mass" value="$(arg mass)"/>
-        <param name="use_external_yaw" value="false"/>
-        <remap from="~odom" to="$(arg odotopic)"/>
-        <remap from="~position_cmd" to="position_cmd"/>
-        <remap from="~so3_cmd" to="so3_cmd"/>
-        <remap from="~motors" to="motors"/>
-      </node>
-      -->
 
   <group unless="$(arg sim)">
       <node pkg="nodelet"

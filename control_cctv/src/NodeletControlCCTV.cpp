@@ -101,7 +101,12 @@ class NodeletControlCCTV : public nodelet::Nodelet
   Eigen::Vector3d k_pos_0_;
   Eigen::Vector3d ki_pos_0_;
   double max_pos_0_int;
-  double k_vel_0_, k_R_0_, k_Omega_0_, k_q_, k_w_;
+  Eigen::Vector3d k_vel_0_;
+
+  Eigen::Vector3d k_R_0_;
+  Eigen::Vector3d k_Omega_0_;
+
+  double k_q_, k_w_;
   double ki_q_, max_e_q_int;
   double des_yaw_i_, des_yaw_dot_i_;
   double current_yaw_;
@@ -549,18 +554,29 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("cable_length", cable_length_, 0.33);
   priv_nh.param("number_of_robots", n_bots_, 5);
   priv_nh.param("my_index", idx_, 0);
+
   // Get Payload gains
   priv_nh.param("k_pos_0/x", k_pos_0_(0),      0.0);
   priv_nh.param("k_pos_0/y", k_pos_0_(1),      0.0);
   priv_nh.param("k_pos_0/z", k_pos_0_(2),      0.0);
-  priv_nh.param("ki_pos_0/x", ki_pos_0_(0),      0.0);
-  priv_nh.param("ki_pos_0/y", ki_pos_0_(1),      0.0);
-  priv_nh.param("ki_pos_0/z", ki_pos_0_(2),      0.0);
+
+  priv_nh.param("ki_pos_0/x", ki_pos_0_(0),    0.0);
+  priv_nh.param("ki_pos_0/y", ki_pos_0_(1),    0.0);
+  priv_nh.param("ki_pos_0/z", ki_pos_0_(2),    0.0);
   priv_nh.param("max_pos_0_int", max_pos_0_int,      0.0);
   
-  priv_nh.param("k_vel_0", k_vel_0_,      0.0);
-  priv_nh.param("k_R_0", k_R_0_,          0.0);
-  priv_nh.param("k_Omega_0", k_Omega_0_,  0.0);
+  priv_nh.param("k_vel_0/x", k_vel_0_(0),     0.0);
+  priv_nh.param("k_vel_0/y", k_vel_0_(1),     0.0);
+  priv_nh.param("k_vel_0/z", k_vel_0_(2),     0.0);
+
+  priv_nh.param("k_R_0/x", k_R_0_(0),         0.0);
+  priv_nh.param("k_R_0/y", k_R_0_(1),         0.0);
+  priv_nh.param("k_R_0/z", k_R_0_(2),         0.0);
+
+  priv_nh.param("k_Omega_0/x", k_Omega_0_(0), 0.0);
+  priv_nh.param("k_Omega_0/y", k_Omega_0_(1), 0.0);
+  priv_nh.param("k_Omega_0/z", k_Omega_0_(2), 0.0);
+
   priv_nh.param("k_q", k_q_,              0.0);
   priv_nh.param("k_w", k_w_,              0.0);
   priv_nh.param("ki_q", ki_q_,            0.0);

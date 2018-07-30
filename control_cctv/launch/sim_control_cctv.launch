@@ -42,7 +42,9 @@
       name="control_cctv"
       required="true"
       output="screen">
-      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/1robot_payload_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/cctv_gains_dragonfly.yaml"/>
+      <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
       <param name="mass" value="$(arg mass)"/>
       <remap from="~quad_odom" to="odom"/>
       <remap from="~payload_odom" to="pl_pose"/>
@@ -107,7 +109,9 @@
       <remap from="~M_0_des_topic"  to="control_cctv/M_0_des"/>
       <remap from="~q_i_des_topic"  to="control_cctv/q_i_des"/>
       <param name="fixed_frame_id" value="simulator"/>
-      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/1robot_payload_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/cctv_gains_dragonfly.yaml"/>
+      <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
     </node>
 
 <!--

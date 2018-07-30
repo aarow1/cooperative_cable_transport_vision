@@ -44,7 +44,9 @@
       <remap from="~M_0_des_topic"  to="/control_cctv/M_0_des"/>
       <remap from="~q_i_des_topic"  to="/control_cctv/q_i_des"/>
       <param name="fixed_frame_id" value="mocap"/>
-      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/1robot_payload_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/cctv_gains_dragonfly.yaml"/>
+      <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
     </node>
 
     <node pkg="mesh_visualization"
@@ -69,7 +71,9 @@
       name="control_cctv"
       required="true"
       output="screen">
-      <rosparam file="$(find control_cctv)/config/cable_vision_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/1robot_payload_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/cctv_gains_dragonfly.yaml"/>
+      <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
       <remap from="~quad_odom" to="$(arg quad_odom_topic)"/>
       <remap from="~payload_odom" to="$(arg payload_odom_topic)"/>
       <remap from="~position_cmd" to="position_cmd"/>
