@@ -49,11 +49,11 @@ class ControlCableVision
                         const Eigen::Vector3d &des_Omega_0,
                         const Eigen::Vector3d &des_alpha_0,
                         const double &des_yaw_i,
-                        const double &k_pos_0,
-                        const double &k_vel_0,
+                        const double &kp_pos_0,
+                        const double &kd_pos_0,
                         const double &k_R_0,
                         const double &k_Omega_0,
-                        const double &k_q,
+                        const double &kp_q,
                         const double &k_w);
 
 
@@ -103,7 +103,7 @@ private:
   double k_vel_0_;          // payload velocity gain
   double k_R_0_;            // payload orientation gain
   double k_Omega_0_;        // payload angular velocity gain
-  double k_q;               // cable direction gain
+  double kp_q;               // cable direction gain
   double k_w;               // cable angular velocity gain
 
   // Payload forces

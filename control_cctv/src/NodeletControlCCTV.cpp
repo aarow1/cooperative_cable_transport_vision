@@ -577,8 +577,8 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_Omega_0/y", k_Omega_0_(1), 0.0);
   priv_nh.param("k_Omega_0/z", k_Omega_0_(2), 0.0);
 
-  priv_nh.param("k_q", k_q_,              0.0);
-  priv_nh.param("k_w", k_w_,              0.0);
+  priv_nh.param("kp_q", k_q_,              0.0);
+  priv_nh.param("kd_q", k_w_,              0.0);
   priv_nh.param("ki_q", ki_q_,            0.0);
 
   priv_nh.param("max_e_q_int", max_e_q_int,  0.0);

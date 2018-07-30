@@ -55,13 +55,13 @@ class ControlCCTV
                         const Vector3d &des_Omega_0,
                         const Vector3d &des_alpha_0,
                         const double &des_yaw_i,
-                        const Vector3d &k_pos_0,
+                        const Vector3d &kp_pos_0,
                         const Vector3d &ki_pos_0,
-                        const Vector3d &k_vel_0,
+                        const Vector3d &kd_pos_0,
                         const Vector3d &k_R_0,
                         const Vector3d &k_Omega_0,
-                        const double &k_q,
-                        const double &k_w,
+                        const double &kp_q,
+                        const double &kd_q,
                         const double &ki_q);
 
 

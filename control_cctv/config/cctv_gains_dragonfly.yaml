@@ -1,16 +1,16 @@
 max_pos_0_int: 1.0
 
-k_pos_0: {x: 3.0, y: 3.0, z: 18.0}
+kp_pos_0: {x: 3.0, y: 3.0, z: 18.0}
 ki_pos_0: {x: 0.0, y: 0.0, z: 0.0}
-k_vel_0: {x: 1.1, y: 1.1, z: 1.1}
+kd_pos_0: {x: 1.1, y: 1.1, z: 1.1}
 
 k_R_0: {x: 0.0, y: 0.0, z: 0.0}
 k_Omega_0: {x: 0.0, y: 0.0, z: 0.0}
 
-k_q: 38
+kp_q: 38
 ki_q: 0.7
 max_e_q_int: 5.0
-k_w: 2.6
+kd_q: 2.6
 
 tau_q_i: 0.012
 tau_q_i_dot: 0.012

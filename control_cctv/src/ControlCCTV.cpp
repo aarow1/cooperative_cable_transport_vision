@@ -99,13 +99,13 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
                       const Vector3d &des_Omega_0,
                       const Vector3d &des_alpha_0,
                       const double &des_yaw_i,
-                      const Vector3d &k_pos_0,
+                      const Vector3d &kp_pos_0,
                       const Vector3d &ki_pos_0,
-                      const Vector3d &k_vel_0,
+                      const Vector3d &kd_pos_0,
                       const Vector3d &k_R_0,
                       const Vector3d &k_Omega_0,
-                      const double &k_q,
-                      const double &k_w,
+                      const double &kp_q,
+                      const double &kd_q,
                       const double &ki_q)
 {
   // Calculate dt
@@ -125,7 +125,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // Calculate pos_0 integral
   for (int i=0; i<3; i++){
-    if(k_pos_0(i) != 0){
+    if(kp_pos_0(i) != 0){
       pos_0_int(i) += ki_pos_0(i)*e_pos_0(i);
     }
     //CLAMP(pos_0_int(i), -max_pos_0_int, max_pos_0_int);
@@ -141,8 +141,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // Payload force and moment (eq. 20, 21)
   F_0_des = m_0_ * (
-          (-1.0 * k_pos_0.cwiseProduct(e_pos_0))  // P control
-        + (-1.0 * k_vel_0.cwiseProduct(e_vel_0))  // D control
+          (-1.0 * kp_pos_0.cwiseProduct(e_pos_0))  // P control
+        + (-1.0 * kd_pos_0.cwiseProduct(e_vel_0))  // D control
         + (-1.0 * pos_0_int)          // I control
         + (des_acc_0)                 // Feedforward Acceleration
         + (g_ * Vector3d::UnitZ())    // Gravity Compensation
@@ -240,8 +240,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // prp component of control <eq 27>
   u_i_prp = (m_i_ * l_i_ * q_i_hat) * (
-          (-1.0 * k_q *e_q_i)             // P control
-        + (-1.0 * k_w *e_w_i)             // D control
+          (-1.0 * kp_q * e_q_i)             // P control
+        + (-1.0 * kd_q  * e_w_i)             // D control
         + (-1.0 * ki_q * e_q_int)
 //        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
 //        - (q_i_hat_2 *w_i_des_dot)      // sketchy double derivative
@@ -308,7 +308,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 //  ROS_WARN_THROTTLE(1, "q_i_hat: [%2.2f, %2.2f, %2.2f]", q_i_hat(0,0), q_i_hat(0,1), q_i_hat(0,2));
 //  ROS_WARN_THROTTLE(1, "q_i_hat: [%2.2f, %2.2f, %2.2f]", q_i_hat(1,0), q_i_hat(1,1), q_i_hat(1,2));
 //  ROS_WARN_THROTTLE(1, "q_i_hat: [%2.2f, %2.2f, %2.2f]", q_i_hat(2,0), q_i_hat(2,1), q_i_hat(2,2));
-//  ROS_WARN_THROTTLE(1, "k_q: %2.2f", k_q);
+//  ROS_WARN_THROTTLE(1, "kp_q: %2.2f", kp_q);
 //  ROS_WARN_THROTTLE(1, "e_w_i: [%2.2f, %2.2f, %2.2f]", e_w_i(0), e_w_i(1), e_w_i(2));
 //  ROS_WARN_THROTTLE(1, "q_i_dot_: [%2.2f, %2.2f, %2.2f]", q_i_dot_(0), q_i_dot_(1), q_i_dot_(2));
 //  ROS_WARN_THROTTLE(1, "m_i_: %2.2f", m_i_);
