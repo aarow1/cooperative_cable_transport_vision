@@ -20,6 +20,10 @@ ControlCCTV::ControlCCTV()
 void ControlCCTV::set_m_0    (const double m_0){
   m_0_ = m_0;
 }
+void ControlCCTV::resetIntegrals(){
+  pos_0_int.setZero();
+  e_q_int.setZero();
+}
 void ControlCCTV::set_J_0    (const Matrix3d J_0){
   J_0_ = J_0;
 }
@@ -126,7 +130,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   // Calculate pos_0 integral
   for (int i=0; i<3; i++){
     if(kp_pos_0(i) != 0){
-      pos_0_int(i) += ki_pos_0(i)*e_pos_0(i);
+      pos_0_int(i) += ki_pos_0(i)*e_pos_0(i) * dt;
     }
     //CLAMP(pos_0_int(i), -max_pos_0_int, max_pos_0_int);
     if(pos_0_int(i) > max_pos_0_int){
@@ -232,7 +236,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // Cable integral
   e_q_int = e_q_int + e_q_i*dt;
-  ROS_INFO_THROTTLE(0.2, "q i int norm is %2.2f", e_q_int.norm());
+  // ROS_INFO_THROTTLE(0.2, "q i int norm is %2.2f", e_q_int.norm());
   if(e_q_int.norm() > max_e_q_int){
     ROS_WARN("q i int is saturated_");
     e_q_int = max_e_q_int * e_q_int.normalized();

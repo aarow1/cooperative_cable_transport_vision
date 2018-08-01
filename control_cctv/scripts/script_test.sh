@@ -4,24 +4,34 @@ ROBOT="dragonfly11"
 
 echo "testing control_cctv functionality"
 
-read -p "turn motors ON"
+echo "Press the any key to: Turn motors ON"
+read -rsn1
 rosservice call /$ROBOT/mav_services/motors true
 
-read -p "takeoff"
-echo "Takeoff..."
+echo "Press the any key to: Takeoff"
+read -rsn1
 rosservice call /$ROBOT/mav_services/takeoff
 
-read -p "go to 2 0 1"
+echo "Press the any key to: go to 2 0 1"
+read -rsn1
 rosservice call /$ROBOT/mav_services/goTo "goal: [2.0, 0.0, 1.0, 0.0]"
 
-read -p "set desired payload to 2, 0, 0.6"
-rostopic pub -1 /dragonfly11/control_cctv/payload_cmd geometry_msgs/Pose '{position: {x: 2.0, y: 0.0, z: 0.6}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}'
+echo "Press the any key to: switch to the PL Hover tracker"
+read -rsn1
+rosservice call /dragonfly11/pl_trackers_manager/transition pl_trackers/PLHoverTracker
 
-read -p "Press enter to switch controller"
-rostopic pub -1 /$ROBOT/control_cctv/use_cctv_controller std_msgs/Bool 1
+echo "Press the any key to: switch controllers"
+read -rsn1
+rosservice call /dragonfly11/control_cctv/use_cctv_controller "data: true"
 
-#read -p "Press enter to switch controller"
-#rostopic pub -1 /$ROBOT/control_cctv/use_cctv_controller std_msgs/Bool 0
+#echo "Press the any key to set desired payload to 3, 0, 0.6"
+#read -rsn1
+#rostopic pub -1 /dragonfly11/pl_trackers_manager/line_tracker_min_jerk/goal quadrotor_msgs/LineTrackerGoal "{x: 2.0, y: 0.0, z: 0.6, yaw: 0.0, v_des: 0.3, a_des: 0.3, relative: false}"
 
-read -p "Press [Enter] to turn off motors"
+#echo "Press the any key to go there"
+#read -rsn1
+#rosservice call /dragonfly11/pl_trackers_manager/transition pl_trackers/PLLineTrackerMinJerk
+
+echo "Press the any key to: turn off motors"
+read -rsn1
 rosservice call /$ROBOT/mav_services/motors 0

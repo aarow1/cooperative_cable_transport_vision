@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pl_trackers_manager</name>
+  <version>1.0.0</version>
+  <description>payload trackers manager for cctv</description>
+  <maintainer email="aarow@seas.upenn.edu">Aaron Weinstein</maintainer>
+
+  <license>BSD</license>
+
+  <author>Aaron Weinstein</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <depend>roscpp</depend>
+  <depend>nodelet</depend>
+  <depend>pluginlib</depend>
+  <depend>quadrotor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>msgs_cctv</depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugin.xml"/>
+  </export>
+</package>

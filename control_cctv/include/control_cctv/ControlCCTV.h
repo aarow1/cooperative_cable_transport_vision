@@ -20,7 +20,7 @@ class ControlCCTV
 //  void setMaxIntegral(const double max_integral);
 //  void setMaxIntegralBody(const double max_integral_b);
 //  void setCurrentOrientation(const Quaterniond &current_orientation);
-//  void resetIntegrals();
+  void resetIntegrals();
 //  void setMaxTiltAngle(const double max_tilt_angle);
 
   // System Setters

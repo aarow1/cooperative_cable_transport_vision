@@ -49,18 +49,10 @@
       <remap from="~quad_odom" to="odom"/>
       <remap from="~payload_odom" to="pl_pose"/>
       <remap from="~position_cmd" to="position_cmd"/>
+      <remap from="~payload_cmd" to="payload_cmd"/>
       <remap from="~so3_cmd" to="so3_cmd"/>
       <remap from="~motors" to="motors"/>
     </node>
-
-
-   <!--payload trajectory and sim odom-->
-   <node pkg="payload_trajectory_cctv"
-     type="simple_payload_trajectory"
-     name="simple_payload_trajectory">
-   <!--    <remap from="/pl_pose" to="/odom"/>-->
-   </node>
-
 
 <!--
     <node pkg="nodelet"
@@ -85,6 +77,18 @@
       output="screen">
       <rosparam file="$(find trackers_manager)/config/trackers.yaml"/>
       <rosparam file="$(find trackers_manager)/config/tracker_params.yaml"/>
+      <rosparam file="$(find so3_control)/config/gains.yaml"/>
+      <remap from="~odom" to="odom"/>
+      <remap from="~cmd" to="position_cmd"/>
+    </node>
+
+    <node pkg="nodelet"
+      type="nodelet"
+      name="pl_trackers_manager"
+      args="load pl_trackers_manager/PLTrackersManager $(arg nodelet_manager_name)"
+      output="screen">
+      <rosparam file="$(find pl_trackers_manager)/config/trackers.yaml"/>
+      <rosparam file="$(find pl_trackers_manager)/config/tracker_params.yaml"/>
       <rosparam file="$(find so3_control)/config/gains.yaml"/>
       <remap from="~odom" to="odom"/>
       <remap from="~cmd" to="position_cmd"/>

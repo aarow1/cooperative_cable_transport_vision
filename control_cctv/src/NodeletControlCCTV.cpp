@@ -4,8 +4,8 @@
 #include <quadrotor_msgs/SO3Command.h>
 #include <quadrotor_msgs/PositionCommand.h>
 #include <msgs_cctv/PayloadCommand.h>
-#include <msgs_cctv/PayloadTrajCommand.h>
 #include <quadrotor_msgs/Corrections.h>
+#include <std_srvs/SetBool.h>
 #include <std_msgs/Bool.h>
 #include <Eigen/Geometry>
 #include <control_cctv/ControlCCTV.h>
@@ -39,12 +39,13 @@ class NodeletControlCCTV : public nodelet::Nodelet
  private:
   void publishSO3Command(); // Still publish so3commands to attitude controller
   void position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd);
-  void payload_cmd_callback (const geometry_msgs::Pose::ConstPtr &payload_cmd);
+  void payload_cmd_callback (const msgs_cctv::PayloadCommand::ConstPtr &payload_cmd);
   void payload_odom_callback(const nav_msgs::Odometry::ConstPtr &pl_odom);
   void quad_odom_callback(const nav_msgs::Odometry::ConstPtr &quad_odom);
   void enable_motors_callback(const std_msgs::Bool::ConstPtr &msg);
   void corrections_callback(const quadrotor_msgs::Corrections::ConstPtr &msg);
-  void use_cctv_control_callback(const std_msgs::Bool::ConstPtr &msg);
+
+  bool use_cctv_control_callback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
   void estimate_cable_state(void);
   void pub_viz(void);
@@ -57,7 +58,9 @@ class NodeletControlCCTV : public nodelet::Nodelet
   ros::Publisher so3_command_pub_;
   ros::Subscriber payload_odom_sub_;
   ros::Subscriber quad_odom_sub_, position_cmd_sub_, enable_motors_sub_, corrections_sub_;
-  ros::Subscriber use_cctv_control_sub_;
+
+  // Service to switch controller
+  ros::ServiceServer use_cctv_control_srv_;
 
   // Debug publishers
   ros::Publisher q_i_pub;
@@ -412,6 +415,11 @@ void NodeletControlCCTV::estimate_cable_state(void){
 
 void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCommand::ConstPtr &cmd)
 {
+  if(active_controller_ == SO3_CONTROL){
+    ROS_INFO_THROTTLE(1, "Control nodelet is using SO3 control and recieved POSITION command");
+  } else if (active_controller_ == CCTV_CONTROL){
+    ROS_WARN_THROTTLE(1, "Control nodelet is using CCTV control and recieved PAYLOAD command");
+  }
   des_pos_ = Eigen::Vector3d(cmd->position.x, cmd->position.y, cmd->position.z);
   des_vel_ = Eigen::Vector3d(cmd->velocity.x, cmd->velocity.y, cmd->velocity.z);
   des_acc_ = Eigen::Vector3d(cmd->acceleration.x, cmd->acceleration.y, cmd->acceleration.z);
@@ -427,15 +435,41 @@ void NodeletControlCCTV::position_cmd_callback(const quadrotor_msgs::PositionCom
   publishSO3Command();
 }
 
-void NodeletControlCCTV::payload_cmd_callback(const geometry_msgs::Pose::ConstPtr &payload_cmd)
+void NodeletControlCCTV::payload_cmd_callback(const msgs_cctv::PayloadCommand::ConstPtr &payload_cmd)
 {
-  des_pos_0_ = Eigen::Vector3d(payload_cmd->position.x, payload_cmd->position.y, payload_cmd->position.z);
-  Eigen::Quaterniond cmd_quaternion = Eigen::Quaterniond(payload_cmd->orientation.x,
-                                      payload_cmd->orientation.y,
-                                      payload_cmd->orientation.z,
-                                      payload_cmd->orientation.w);
+  if(active_controller_ == SO3_CONTROL){
+    ROS_WARN_THROTTLE(1, "Control nodelet is using SO3 control and recieved PAYLOAD command");
+  } else if (active_controller_ == CCTV_CONTROL){
+    ROS_INFO_THROTTLE(1, "Control nodelet is using CCTV control and recieved POSITION command");
+  }
+
+  // Extract linear componenets
+  des_pos_0_(0) = payload_cmd->pos.position.x;
+  des_pos_0_(1) = payload_cmd->pos.position.y;
+  des_pos_0_(2) = payload_cmd->pos.position.z;
+
+  des_vel_0_(0) = payload_cmd->vel.linear.x;
+  des_vel_0_(1) = payload_cmd->vel.linear.y;
+  des_vel_0_(2) = payload_cmd->vel.linear.z;
+
+  des_acc_0_(0) = payload_cmd->acc.linear.x;
+  des_acc_0_(1) = payload_cmd->acc.linear.y;
+  des_acc_0_(2) = payload_cmd->acc.linear.z;
+
+  // Extract angular components
+  Eigen::Quaterniond cmd_quaternion = Eigen::Quaterniond(payload_cmd->pos.orientation.x,
+                                      payload_cmd->pos.orientation.y,
+                                      payload_cmd->pos.orientation.z,
+                                      payload_cmd->pos.orientation.w);
   des_R_0_ = cmd_quaternion.normalized().toRotationMatrix();
-  ROS_INFO("~~~got new payload command position~~~~");
+
+  des_Omega_0_(0) = payload_cmd->vel.angular.x;
+  des_Omega_0_(1) = payload_cmd->vel.angular.y;
+  des_Omega_0_(2) = payload_cmd->vel.angular.z;
+
+  des_alpha_0_(0) = payload_cmd->acc.angular.x;
+  des_alpha_0_(1) = payload_cmd->acc.angular.y;
+  des_alpha_0_(2) = payload_cmd->acc.angular.z;
 }
 
 
@@ -447,23 +481,29 @@ void NodeletControlCCTV::enable_motors_callback(const std_msgs::Bool::ConstPtr &
     ROS_INFO("control cctv Disabling motors");
 
   enable_motors_ = msg->data;
+
   // Reset integral when toggling motor state
-//  controller_.resetIntegrals();
+  so3_controller_.resetIntegrals();
+  cctv_controller_.resetIntegrals();
 }
 
-void NodeletControlCCTV::use_cctv_control_callback(const std_msgs::Bool::ConstPtr &msg)
+bool NodeletControlCCTV::use_cctv_control_callback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
 {
-  if(msg->data){
+  ROS_INFO("switching controller");
+  if(req.data){
     ROS_INFO("Switching to cctv control... good luck");
     active_controller_ = CCTV_CONTROL;
-  }
-  else{
-    ROS_INFO("Switching back to so3 control");
+  } else {
+    ROS_INFO("Switching so3 control");
     active_controller_ = SO3_CONTROL;
   }
 
   // Reset integral when toggling motor state
-//  controller_.resetIntegrals();
+  so3_controller_.resetIntegrals();
+  cctv_controller_.resetIntegrals();
+  res.success = true;
+  res.message = "did the switch";
+  return true;
 }
 
 void NodeletControlCCTV::pub_viz()
@@ -646,14 +686,15 @@ void NodeletControlCCTV::onInit()
   u_i_prl_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i_prl", 10);
   u_i_prp_pub   = priv_nh.advertise<geometry_msgs::Vector3Stamped>("u_i_prp", 10);
 
+  // Useful subscribers
   payload_odom_sub_   = priv_nh.subscribe("payload_odom", 10, &NodeletControlCCTV::payload_odom_callback,         this, ros::TransportHints().tcpNoDelay());
+  payload_cmd_sub_    = priv_nh.subscribe("payload_cmd",  10, &NodeletControlCCTV::payload_cmd_callback,          this, ros::TransportHints().tcpNoDelay());
   quad_odom_sub_      = priv_nh.subscribe("quad_odom",    10, &NodeletControlCCTV::quad_odom_callback,            this, ros::TransportHints().tcpNoDelay());
   position_cmd_sub_   = priv_nh.subscribe("position_cmd", 10, &NodeletControlCCTV::position_cmd_callback,         this, ros::TransportHints().tcpNoDelay());
   enable_motors_sub_  = priv_nh.subscribe("motors",       2,  &NodeletControlCCTV::enable_motors_callback,        this, ros::TransportHints().tcpNoDelay());
   corrections_sub_    = priv_nh.subscribe("corrections",  10, &NodeletControlCCTV::corrections_callback,          this, ros::TransportHints().tcpNoDelay());
-  payload_cmd_sub_    = priv_nh.subscribe("payload_cmd",  10, &NodeletControlCCTV::payload_cmd_callback,          this, ros::TransportHints().tcpNoDelay());
 
-  use_cctv_control_sub_ = priv_nh.subscribe("use_cctv_controller", 10, &NodeletControlCCTV::use_cctv_control_callback, this);
+  use_cctv_control_srv_ = priv_nh.advertiseService("use_cctv_controller", &NodeletControlCCTV::use_cctv_control_callback, this);
 
   ROS_INFO("nodelet control cctv is alive");
 }

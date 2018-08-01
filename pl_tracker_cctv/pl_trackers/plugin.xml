@@ -1,0 +1,23 @@
+<library path="lib/libpl_line_tracker_min_jerk">
+  <class name="pl_trackers/PLLineTrackerMinJerk" type="PLLineTrackerMinJerk" base_class_type="pl_trackers_manager::Tracker">
+    <description>
+      This is a tracker which follows a line from the current position to a given goal position using min jerk trajectory.
+    </description>
+  </class>
+</library>
+
+<library path="lib/libpl_null_tracker">
+  <class name="pl_trackers/PLNullTracker" type="PLNullTracker" base_class_type="pl_trackers_manager::Tracker">
+    <description>
+      This tracker literally does nothing.
+    </description>
+  </class>
+</library>
+
+<library path="lib/libpl_hover_tracker">
+  <class name="pl_trackers/PLHoverTracker" type="PLHoverTracker" base_class_type="pl_trackers_manager::Tracker">
+    <description>
+      This tracker keeps the payload in place
+    </description>
+  </class>
+</library>

@@ -1,0 +1,5 @@
+# This should contain tracker parameters
+
+pl_line_tracker_min_jerk:
+  default_v_des: 2.0
+  default_a_des: 1.0

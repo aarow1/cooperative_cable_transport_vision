@@ -33,7 +33,7 @@
       name="VizCCTV"
       output="screen">
       <remap from="~payload_odom_topic" to="$(arg payload_odom_topic)"/>
-      <remap from="~quad_odom_topic" to="$(arg quad_odom_topic)"/>
+      <remap from="~quad_odom_topic"    to="$(arg quad_odom_topic)"/>
       <remap from="~q_i_topic"      to="/control_cctv/q_i"/>
       <remap from="~q_i_dot_topic"  to="/control_cctv/q_i_dot"/>
       <remap from="~w_i_topic"      to="/control_cctv/w_i"/>

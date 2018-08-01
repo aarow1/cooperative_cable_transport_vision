@@ -7,8 +7,8 @@
 	<arg name="start_nodelet_manager" default="1"/>
 	<arg name="nodelet_manager_name" default="nodelet_manager_control"/>
   <arg name="sim" default="0"/>
-  <arg name="odotopic" value="/vicon/$(arg robot_name)/odom"/> -->
-  <!-- <arg name="odotopic" value="/$(arg robot_name)/quadrotor_ukf/control_odom"/>-->
+  <arg name="quad_odom_topic" value="/vicon/$(arg robot_name)/odom"/> -->
+  <!-- <arg name="quad_odom_topic" value="/$(arg robot_name)/quadrotor_ukf/control_odom"/>-->
   <arg name="pl_odom_topic" value="/vicon/pl11/odom"/>
 
     <group ns="$(arg robot_name)">
@@ -40,8 +40,8 @@
 	      clear_params="true"
 	      output="screen">
 	      <rosparam file="$(find mav_manager)/config/mav_manager_params.yaml" />
-	      <remap from="~odom" to="$(arg odotopic)"/>
-	      <remap from="odom" to="$(arg odotopic)"/>
+        <remap from="~odom" to="$(arg quad_odom_topic)"/>
+        <remap from="odom" to="$(arg quad_odom_topic)"/>
 	      <remap from="~des_odom" to="des_odom"/>
 	    </node>
 
@@ -54,7 +54,7 @@
 	      <rosparam file="$(find trackers_manager)/config/trackers.yaml"/>
 	      <rosparam file="$(find trackers_manager)/config/tracker_params.yaml"/>
         <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
-        <remap from="~odom" to="$(arg odotopic)"/>
+        <remap from="~odom" to="$(arg quad_odom_topic)"/>
 	      <remap from="~cmd" to="position_cmd"/>
 	    </node>
 
@@ -70,7 +70,7 @@
         <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
         <param name="mass" value="$(arg mass)"/>
         <param name="use_external_yaw" value="false"/>
-        <remap from="~quad_odom" to="$(arg odotopic)"/>
+        <remap from="~quad_odom" to="$(arg quad_odom_topic)"/>
         <remap from="~payload_odom" to="$(arg pl_odom_topic)"/>
 	      <remap from="~position_cmd" to="position_cmd"/>
 	      <remap from="~so3_cmd" to="so3_cmd"/>
@@ -96,7 +96,7 @@
           clear_params="true"
           output="screen"
           unless="$(arg sim)">
-          <remap from="~odom" to="$(arg odotopic)"/>
+          <remap from="~odom" to="$(arg quad_odom_topic)"/>
           <remap from="~so3_cmd" to="so3_cmd"/>
       </node>
 
@@ -121,7 +121,7 @@
         <node pkg="topic_tools"
             type="throttle"
             name="odom_throttle"
-            args="messages $(arg odotopic) 10 odom_throttled">
+            args="messages $(arg quad_odom_topic) 10 odom_throttled">
         </node>
 	    </group>
     </group>

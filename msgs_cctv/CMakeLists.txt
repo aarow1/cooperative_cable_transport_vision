@@ -19,7 +19,6 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_message_files(
   FILES
-  PayloadTrajCommand.msg
   PayloadCommand.msg
   )
 

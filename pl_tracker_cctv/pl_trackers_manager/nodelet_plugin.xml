@@ -1,0 +1,6 @@
+<library path="lib/libpl_trackers_manager">
+  <class name="pl_trackers_manager/PLTrackersManager" type="PLTrackersManager" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+</library>

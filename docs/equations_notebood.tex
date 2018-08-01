@@ -1,0 +1,111 @@
+\title{Cooperative Cable Transportation with Vision}
+\author{
+        Aaron Weinstein
+}
+\date{\today}
+
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{xcolor}
+
+\begin{document}
+\setlength{\parindent}{0pt}
+
+\maketitle
+
+\begin{abstract}
+The goal of this project is to take the the next step in allowing UAV's to transport heavy loads in the real world
+\end{abstract}
+
+\section{Previous work}\label{previous work}
+
+\cite{sreenath_dynamics_2013} Work done at penn on multiple robots with cables, experiments done in vicon, required high order derivative estimates
+
+\cite{gassner_dynamic_2017} Visual control of a payload with 2 quadrotors. No communication. LQR solution to put follower above tag. Uses tag on tail of leader to give the yaw of the payload, otherwise assume flat
+
+\cite{tognon_aerial_2018} Mathematical explanation of how non-zero desired internal tension can be used in a communication free system to allow control of the attitude of a payload
+
+\cite{lee_geometric_2018} Controller used here with modifications to only use attainable derivatives. Only simulation
+
+\cite{tagliabue_robust_nodate} Transportation of large objects with many hexrotors. Attachment via spherical joint (similar to a short cable). Communication free, each robot estimates the force on the payload and does an admittance controller. Heavy state machine use to reject disturbances. Quasi-static. Assumes flat. Yaw of the payload is based on following the leader
+
+\cite{tang_aggressive_2018} Single robot with closed loop control using vision
+
+\cite{lightbody_efficient_2017} Whycode is a circular tag detector that includes a barcode in the middle for unique identification and yaw estimation
+
+\cite{loianno_cooperative_2018} How to merge visual estimates for multi robot control of a payload
+
+
+\section{Equations}\label{equations}
+\subsection{Payload Errors}
+Subscript 0 refers to the payload
+$$ e_{x_0} = x_0 - x_{0_d} $$
+$$ e_{\dot{x}_0} = \dot{x}_0 - \dot{x}_{0_d}$$ 
+$$ e_{\int{x_0}} = \sum e_{x_0} dt $$
+$$ e_{R_0} = \frac{1}{2} (R_{0_d}^\top R_0 - R_0^\top R_{0_d}) $$ 
+$$ e_{\Omega_0} = \Omega_0 - R_0^\top R_{0_d} \Omega_{0_d} $$
+
+\subsection{Payload Control Wrench}
+
+Linear component:
+$$ F_0 = m_0 (-k_{p_x} e_{x_0} - k_{d_x} e_{\dot{x}_0} - k_{i_x} e_{\int{x}} + a_{0_d} + ge_3) $$
+
+Untested Angular component:
+$$ M_0 = -k_{R_0} e_{R_0} - k_{\Omega_0} e_{x_0} + (R_0^\top R_{0_d} \Omega_{0_d})^\wedge J_0R_0^\top R_{0_d} \Omega_{0_d} + J_0R_0^\top R_{0_d} \dot{\Omega}_{0_d}$$
+
+\subsection{Payload Control Distribution}
+Define constant matrix $P$
+$$
+P = \begin{bmatrix}
+I_{3x3} & \dots I_{3x3} \\
+\hat{\rho_0} & \dots \hat{\rho_n}
+\end{bmatrix}
+$$
+
+For 3 robots, $rank(p) = 6$ which allows for full linear and angular control of the payload
+
+Next we calculate the ``virtual desired control" $\mu$ for each cable
+
+$$
+\begin{bmatrix}
+	\mu_{0_d} \\ \dots \\ \mu_{n_d}
+\end{bmatrix}
+= diag[R_0, \dots, R_0] P^\top (PP^\top)^{-1}
+\begin{bmatrix}
+R_0^\top F_d \\
+M_d
+\end{bmatrix}
+$$
+
+\subsection{Cable force input}
+The attachment point acceleraton is:
+$$a_i = \ddot{x}_{0_d} + ge_3 + R_0 \hat{\Omega}_0^2 \rho_i - R_0 \hat{\rho_i} \dot{\Omega}_0 $$
+
+The virtual control input is then mapped onto the cable direction: $q_i$
+$$ \mu_i = q_i q_i^\top \mu_{i_d} $$
+
+And used to calculate the parallel component of control:
+
+$$u_i^\| = \mu_i + m_i l_i \|\omega_i\|^2 q_i + m_i q_i q_i^\top a_i$$
+
+Which we simplified to (for now)
+$$u_i^\| = \mu_i + (m_i q_i q_i^\top a_i)$$
+
+\subsection{Cable Control}
+Now we need the quadrotor to move the cable to the desired direction
+
+$$ u_i^\perp = m_i l_i \hat{q}_i (-k_{p_q} e_q - k_{d_q} e_w - (q_i \cdot \omega_{i_d}) \dot{q}_i - \hat{q}_i^2 \dot{\omega}_d) - m_i \hat{q}_i^2 a_i $$
+
+Simplified to:
+
+$$ u_i^\perp = m_i l_i \hat{q}_i (-k_{p_q} e_q - k_{d_q} e_w) - m_i \hat{q}_i^2 a_i $$
+
+\subsection{Quadrotor attitude}
+Finally the components of u are combined and sent as the desired thrust to a standard attitude controller
+$$u_i = u_i^\| + u_i^\perp $$
+
+\bibliographystyle{ieeetr}
+\bibliography{bibliography}
+
+\end{document}

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pl_trackers</name>
+  <version>1.0.0</version>
+  <description>pl_trackers</description>
+  <maintainer email="adw106@gmail.com">Aaron Weinstein</maintainer>
+
+  <license>BSD</license>
+
+  <author>Aaron Weinstein</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_modules</build_depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf</depend>
+  <depend>pl_trackers_manager</depend>
+
+  <export>
+    <pl_trackers_manager plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>

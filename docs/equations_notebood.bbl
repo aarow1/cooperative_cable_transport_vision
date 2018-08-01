@@ -1,0 +1,44 @@
+\begin{thebibliography}{1}
+
+\bibitem{sreenath_dynamics_2013}
+K.~Sreenath and V.~Kumar, ``Dynamics, control and planning for cooperative
+  manipulation of payloads suspended by cables from multiple quadrotor
+  robots,'' {\em rn}, vol.~1, no.~r2, p.~r3, 2013.
+
+\bibitem{gassner_dynamic_2017}
+M.~Gassner, T.~Cieslewski, and D.~Scaramuzza, ``Dynamic collaboration without
+  communication: {Vision}-based cable-suspended load transport with two
+  quadrotors,'' in {\em Robotics and {Automation} ({ICRA}), 2017 {IEEE}
+  {International} {Conference} on}, pp.~5196--5202, IEEE, 2017.
+
+\bibitem{tognon_aerial_2018}
+M.~Tognon, C.~Gabellieri, L.~Pallottino, and A.~Franchi, ``Aerial
+  {Co}-{Manipulation} {With} {Cables}: {The} {Role} of {Internal} {Force} for
+  {Equilibria}, {Stability}, and {Passivity},'' {\em IEEE Robotics and
+  Automation Letters}, vol.~3, pp.~2577--2583, July 2018.
+
+\bibitem{lee_geometric_2018}
+T.~Lee, ``Geometric {Control} of {Quadrotor} {UAVs} {Transporting} a
+  {Cable}-{Suspended} {Rigid} {Body},'' {\em IEEE Transactions on Control
+  Systems Technology}, vol.~26, pp.~255--264, Jan. 2018.
+
+\bibitem{tagliabue_robust_nodate}
+A.~Tagliabue, M.~Kamel, R.~Siegwart, and J.~Nieto, ``Robust {Collaborative}
+  {Object} {Transportation} {Using} {Multiple} {MAVs}.''
+
+\bibitem{tang_aggressive_2018}
+S.~Tang, V.~Wuest, and V.~Kumar, ``Aggressive {Flight} {With} {Suspended}
+  {Payloads} {Using} {Vision}-{Based} {Control},'' {\em IEEE Robotics and
+  Automation Letters}, vol.~3, pp.~1152--1159, Apr. 2018.
+
+\bibitem{lightbody_efficient_2017}
+P.~Lightbody, T.~Krajník, and M.~Hanheide, ``An efficient visual fiducial
+  localisation system,'' {\em ACM SIGAPP Applied Computing Review}, vol.~17,
+  pp.~28--37, Nov. 2017.
+
+\bibitem{loianno_cooperative_2018}
+G.~Loianno and V.~Kumar, ``Cooperative {Transportation} {Using} {Small}
+  {Quadrotors} {Using} {Monocular} {Vision} and {Inertial} {Sensing},'' {\em
+  IEEE Robotics and Automation Letters}, vol.~3, pp.~680--687, Apr. 2018.
+
+\end{thebibliography}

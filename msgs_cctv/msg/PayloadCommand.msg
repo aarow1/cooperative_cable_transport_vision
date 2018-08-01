@@ -1,13 +1,5 @@
 Header header
-geometry_msgs/Point payload_position
-geometry_msgs/Vector3 payload_velocity
-geometry_msgs/Vector3 payload_acceleration
-geometry_msgs/Quaternion payload_orientation
-geometry_msgs/Vector3 payload_angular_velocity
-geometry_msgs/Vector3 payload_angular_acceleration
-float64 k_x_payload
-float64 k_v_payload
-float64 k_R_payload
-float64 k_Omega_payload
-float64 k_cable_angle
-float64 k_cable_angular_velocity
+
+geometry_msgs/Pose pos
+geometry_msgs/Twist vel
+geometry_msgs/Twist acc
