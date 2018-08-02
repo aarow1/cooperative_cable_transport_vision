@@ -91,7 +91,7 @@
       <rosparam file="$(find pl_trackers_manager)/config/tracker_params.yaml"/>
       <rosparam file="$(find so3_control)/config/gains.yaml"/>
       <remap from="~odom" to="odom"/>
-      <remap from="~cmd" to="position_cmd"/>
+      <remap from="~pl_cmd" to="payload_cmd"/>
     </node>
 
     <!-- MAV Manager -->
