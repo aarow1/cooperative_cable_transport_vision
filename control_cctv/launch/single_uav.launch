@@ -61,12 +61,13 @@
       <node pkg="nodelet"
         type="nodelet"
         name="pl_trackers_manager"
-        args="load pl_trackers_manager/PLTrackersManager $(arg nodelet_manager_name)"
+        args="load pl_trackers_manager/PLTrackersManager standalone_nodelet"
         output="screen">
         <rosparam file="$(find pl_trackers_manager)/config/trackers.yaml"/>
         <rosparam file="$(find pl_trackers_manager)/config/tracker_params.yaml"/>
         <rosparam file="$(find so3_control)/config/gains.yaml"/>
-        <remap from="~odom" to="odom"/>
+        <remap from="~odom" to="$(arg quad_odom_topic)"/>
+        <remap from="~pl_odom_topic" to="$(arg pl_odom_topic)"/>
         <remap from="~pl_cmd" to="payload_cmd"/>
       </node>
 

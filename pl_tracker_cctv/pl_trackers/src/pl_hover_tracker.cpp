@@ -43,13 +43,16 @@ const msgs_cctv::PayloadCommand::ConstPtr PLHoverTracker::update(const nav_msgs:
     hover_pos(0) = msg->pose.pose.position.x;
     hover_pos(1) = msg->pose.pose.position.y;
     hover_pos(2) = msg->pose.pose.position.z;
-    hover_orr.x() = msg->pose.pose.orientation.x;
-    hover_orr.y() = msg->pose.pose.orientation.y;
-    hover_orr.z() = msg->pose.pose.orientation.z;
-    hover_orr.w() = msg->pose.pose.orientation.w;
+    // hover_orr.x() = msg->pose.pose.orientation.x;
+    // hover_orr.y() = msg->pose.pose.orientation.y;
+    // hover_orr.z() = msg->pose.pose.orientation.z;
+    // hover_orr.w() = msg->pose.pose.orientation.w;
+    hover_orr = Eigen::Quaterniond::Identity();
     pose_set = true;
+    ROS_INFO("pl hover tracker set hover pos to %2.2f, %2.2f, %2.2f", hover_pos(0), hover_pos(1), hover_pos(2));
   }
 
+  ROS_INFO("hover tracker update");
   msgs_cctv::PayloadCommand::Ptr cmd(new msgs_cctv::PayloadCommand);
   cmd->header.stamp = ros::Time::now();
   cmd->header.frame_id = msg->header.frame_id;

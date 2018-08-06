@@ -53,11 +53,13 @@ void PLTrackersManager::onInit(void)
 {
   ros::NodeHandle priv_nh(getPrivateNodeHandle());
 
+  ROS_WARN("--------------------------creating pl trackers manager");
   XmlRpc::XmlRpcValue tracker_list;
   priv_nh.getParam("trackers", tracker_list);
   ROS_ASSERT(tracker_list.getType() == XmlRpc::XmlRpcValue::TypeArray);
   for(int i = 0; i < tracker_list.size(); i++)
   {
+    ROS_WARN("--------------------------loading pl trackers");
     ROS_ASSERT(tracker_list[i].getType() == XmlRpc::XmlRpcValue::TypeString);
     const std::string tracker_name = static_cast<const std::string>(tracker_list[i]);
     try
@@ -83,10 +85,12 @@ void PLTrackersManager::onInit(void)
   pub_cmd_ = priv_nh.advertise<msgs_cctv::PayloadCommand>("pl_cmd", 10);
   pub_status_ = priv_nh.advertise<quadrotor_msgs::TrackerStatus>("status", 10);
 
+  ROS_WARN("fuck this shit");
   sub_odom_ = priv_nh.subscribe("pl_odom_topic", 10, &PLTrackersManager::odom_callback, this,
                                 ros::TransportHints().tcpNoDelay());
 
   srv_tracker_ = priv_nh.advertiseService("transition", &PLTrackersManager::transition_callback, this);
+  ROS_INFO("pl trackers manager should actually exist");
 }
 
 void PLTrackersManager::odom_callback(const nav_msgs::Odometry::ConstPtr &msg)
