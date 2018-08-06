@@ -52,7 +52,7 @@ const msgs_cctv::PayloadCommand::ConstPtr PLHoverTracker::update(const nav_msgs:
     ROS_INFO("pl hover tracker set hover pos to %2.2f, %2.2f, %2.2f", hover_pos(0), hover_pos(1), hover_pos(2));
   }
 
-  ROS_INFO("hover tracker update");
+  // ROS_INFO("hover tracker update");
   msgs_cctv::PayloadCommand::Ptr cmd(new msgs_cctv::PayloadCommand);
   cmd->header.stamp = ros::Time::now();
   cmd->header.frame_id = msg->header.frame_id;

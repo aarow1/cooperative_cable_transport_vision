@@ -125,6 +125,7 @@ const msgs_cctv::PayloadCommand::ConstPtr PLLineTracker::update(
 
   if(!traj_set_)
   {
+    ROS_INFO("smooth pl line tracker generating traj");
     // Precalculated coeffs for a normalized trajectory with homogeneous boundaries
     Eigen::Matrix<double, 1, 12> base_coeffs_;
     base_coeffs_ << 0, 0, 0, 0, 0, 0, 462, -1980, 3465, -3080, 1386, -252;
@@ -136,7 +137,8 @@ const msgs_cctv::PayloadCommand::ConstPtr PLLineTracker::update(
                         0, 1, 2, 3,  4,  5,  6,  7,  8,  9, 10,  11,
                         0, 0, 2, 6, 12, 20, 30, 42, 56, 72, 90, 110;
 
-    start_ = ICs_.pos();
+    start_ = Eigen::Vector3d(msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
+
     Eigen::Vector3d delta_pos = goal_ - start_;
     ROS_INFO_STREAM("start is " << start_);
     ROS_INFO_STREAM("goal is " << goal_);
@@ -147,7 +149,7 @@ const msgs_cctv::PayloadCommand::ConstPtr PLLineTracker::update(
       a_coeffs_.block<3,1>(0,i) = delta_pos * base_coeffs_(0, i) * coeff_modifiers_(2, i);
     }
 
-    ROS_INFO_STREAM("x coeffs are " << x_coeffs_);
+    // ROS_INFO_STREAM("x coeffs are " << x_coeffs_);
 
     traj_set_ = true;
     traj_start_time_ = t_now;
@@ -163,7 +165,7 @@ const msgs_cctv::PayloadCommand::ConstPtr PLLineTracker::update(
 
   if(traj_time >= traj_duration_) // Reached goal
   {
-    ROS_INFO("line tracker Reached goal");
+    ROS_INFO_THROTTLE(2, "line tracker Reached goal");
     a = Eigen::Vector3d::Zero();
     v = Eigen::Vector3d::Zero();
     x = goal_;
@@ -175,13 +177,16 @@ const msgs_cctv::PayloadCommand::ConstPtr PLLineTracker::update(
     Eigen::Matrix<double, 12, 1> tv_vec = get_t_vector(t_now, 1);
     Eigen::Matrix<double, 12, 1> ta_vec = get_t_vector(t_now, 2);
 
-    ROS_INFO("traj_time is %2.2f, duration is %2.2f", traj_time, traj_duration_);
-    ROS_INFO_STREAM("tx_vec is " << tx_vec);
-    ROS_INFO_STREAM("x_coeffs_ are " << x_coeffs_);
-    ROS_INFO_STREAM("x is " << x);
+    // ROS_INFO("traj_time is %2.2f, duration is %2.2f", traj_time, traj_duration_);
+    // ROS_INFO_STREAM("tx_vec is " << tx_vec);
+    // ROS_INFO_STREAM("x_coeffs_ are " << x_coeffs_);
     x = start_ + x_coeffs_ * tx_vec;
     v = v_coeffs_ * tv_vec;
     a = a_coeffs_ * ta_vec;
+
+    ROS_INFO_STREAM("x is " << x);
+    ROS_INFO_STREAM("v is " << v);
+    ROS_INFO_STREAM("a is " << a);
 
   }
   else // (traj_time < 0) can happen with LineTrackerGoalTimed
