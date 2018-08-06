@@ -34,11 +34,16 @@ add_library(pl_hover_tracker src/pl_hover_tracker.cpp)
 add_dependencies(pl_hover_tracker ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(pl_hover_tracker ${catkin_LIBRARIES})
 
+add_library(pl_line_tracker src/pl_line_tracker.cpp)
+add_dependencies(pl_line_tracker ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(pl_line_tracker pl_initial_conditions ${catkin_LIBRARIES})
+
 install(TARGETS
     pl_initial_conditions
     pl_line_tracker_min_jerk
     pl_null_tracker
     pl_hover_tracker
+    pl_line_tracker
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -1,4 +1,5 @@
 trackers:
   - pl_trackers/PLLineTrackerMinJerk
+  - pl_trackers/PLLineTracker
   - pl_trackers/PLNullTracker
   - pl_trackers/PLHoverTracker
