@@ -4,7 +4,7 @@ quadrotor_name: dragonfly11
 mass: 0.250 # redundant of robot_mass
 robot_mass: 0.250
 payload_mass: 0.037
-cable_length: 0.5
+cable_length: 0.55
 my_index: 0
 
 attachment:
