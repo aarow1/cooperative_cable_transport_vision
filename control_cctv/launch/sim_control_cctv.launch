@@ -25,6 +25,11 @@
       <arg name="mass" value="$(arg mass)"/>
     </include>
 
+
+    <node pkg="simulator_payload" type="payload_simulator" name="pl_sim" />
+
+  />
+
     <!--nodelet manager
       -->
     <node pkg="nodelet"
@@ -92,6 +97,7 @@
       <rosparam file="$(find so3_control)/config/gains.yaml"/>
       <remap from="~odom" to="odom"/>
       <remap from="~pl_cmd" to="payload_cmd"/>
+      <remap from="~pl_odom_topic" to="pl_pose"/>
     </node>
 
     <!-- MAV Manager -->

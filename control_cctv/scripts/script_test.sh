@@ -24,13 +24,25 @@ echo "Press the any key to: switch controllers"
 read -rsn1
 rosservice call /dragonfly11/control_cctv/use_cctv_controller "data: true"
 
-#echo "Press the any key to set desired payload to 3, 0, 0.6"
-#read -rsn1
-#rostopic pub -1 /dragonfly11/pl_trackers_manager/line_tracker_min_jerk/goal quadrotor_msgs/LineTrackerGoal "{x: 2.0, y: 0.0, z: 0.6, yaw: 0.0, v_des: 0.3, a_des: 0.3, relative: false}"
+echo "Press the any key to set desired payload to 3, 0, 0.6"
+read -rsn1
+rostopic pub -1 /dragonfly11/pl_trackers_manager/line_tracker_min_jerk/goal quadrotor_msgs/LineTrackerGoal "{x: 6.0, y: 0.0, z: 0.3, yaw: 0.0, v_des: 1.0, a_des: 1.0, relative: false}"
 
-#echo "Press the any key to go there"
+echo "Press the any key to go there"
+read -rsn1
+rosservice call /dragonfly11/pl_trackers_manager/transition pl_trackers/PLLineTrackerMinJerk
+
+#echo "Press the any key to set desired payload to 1, 0, 0.6"
 #read -rsn1
-#rosservice call /dragonfly11/pl_trackers_manager/transition pl_trackers/PLLineTrackerMinJerk
+#rostopic pub -1 /dragonfly11/pl_trackers_manager/line_tracker_min_jerk/goal quadrotor_msgs/LineTrackerGoal "{x: 5.0, y: 1.0, z: 0.6, yaw: 0.0, v_des: 1.0, a_des: 1.0, relative: false}"
+
+#echo "Press the any key to set desired payload to 1, 0, 0.6"
+#read -rsn1
+#rostopic pub -1 /dragonfly11/pl_trackers_manager/line_tracker_min_jerk/goal quadrotor_msgs/LineTrackerGoal "{x: 5.0, y: -1.0, z: 0.6, yaw: 0.0, v_des: 1.0, a_des: 1.0, relative: false}"
+
+echo "Press the any key to set desired payload to 1, 0, 0.6"
+read -rsn1
+rostopic pub -1 /dragonfly11/pl_trackers_manager/line_tracker_min_jerk/goal quadrotor_msgs/LineTrackerGoal "{x: 1.5, y: 0.0, z: 0.2, yaw: 0.0, v_des: 1.0, a_des: 1.0, relative: false}"
 
 echo "Press the any key to: turn off motors"
 read -rsn1

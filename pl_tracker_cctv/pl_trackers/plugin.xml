@@ -21,3 +21,11 @@
     </description>
   </class>
 </library>
+
+<library path="lib/libpl_line_tracker">
+  <class name="pl_trackers/PLLineTracker" type="PLLineTracker" base_class_type="pl_trackers_manager::Tracker">
+    <description>
+      This tracker moves the payload with a really smooth trajectory
+    </description>
+  </class>
+</library>

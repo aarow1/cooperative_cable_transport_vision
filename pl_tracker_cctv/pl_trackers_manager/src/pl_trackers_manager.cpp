@@ -91,6 +91,7 @@ void PLTrackersManager::onInit(void)
 
 void PLTrackersManager::odom_callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
+//  ROS_INFO("pl tm got a fucking pl odom");
   std::map<std::string, pl_trackers_manager::Tracker*>::iterator it;
   for(it = tracker_map_.begin(); it != tracker_map_.end(); it++)
   {
