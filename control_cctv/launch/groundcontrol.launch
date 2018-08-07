@@ -11,7 +11,7 @@
     </node>
 
     <node pkg="master_sync_fkie" type="master_sync" name="multimaster_client_sync">
-      	<rosparam file="$(find control_cctv)/config/multimaster_params.yaml" />
+        <rosparam file="$(find control_cctv)/config/gc_multimaster_params.yaml" />
     </node>
 
     <node pkg="mocap_vicon"
@@ -24,7 +24,7 @@
       <param name="publish_tf" value="true"/>
       <param name="fixed_frame_id" value="mocap"/>
       <rosparam param="model_list">
-        ["dragonfly11", "cctv_bar"]
+        ["dragonfly2", "dragonfly11", "cctv_bar"]
       </rosparam>
     </node>
 

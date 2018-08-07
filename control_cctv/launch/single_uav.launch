@@ -21,7 +21,7 @@
 	    </node>
 
 	    <node pkg="master_sync_fkie" type="master_sync" name="multimaster_client_sync">
-	      <rosparam file="$(find control_cctv)/config/multimaster_params.yaml" />
+        <rosparam file="$(find control_cctv)/config/$(arg robot_name)_multimaster_params.yaml" />
 	    </node>
 
 	    <!-- Nodelet manager-->
@@ -31,7 +31,8 @@
 	      args="manager"
 	      output="screen"
         if="$(arg start_nodelet_manager)">
-        <rosparam file="$(find mav_manager)/config/mav_manager_params.yaml" /> </node>
+        <rosparam file="$(find mav_manager)/config/mav_manager_params.yaml" />
+      </node>
 
 	    <!-- MAV Manager -->
 	    <node pkg="mav_manager"

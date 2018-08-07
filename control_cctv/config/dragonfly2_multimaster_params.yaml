@@ -1,0 +1,8 @@
+sync_topics: ['/vicon/dragonfly2/odom',
+  '/vicon/cctv_bar/odom',
+  '/dragonfly2/control_cctv/*',
+  '/dragonfly2/pl_trackers_manager/*',
+  '/dragonfly2/payload_cmd'
+  ]
+ignore_nodes: ['']
+ignore_services: ['']
