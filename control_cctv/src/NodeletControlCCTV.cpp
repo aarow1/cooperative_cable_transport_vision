@@ -640,6 +640,14 @@ void NodeletControlCCTV::onInit()
   }
   rho_i_ = rho_.block<3,1>(0, idx_);
 
+  // Load Payload Inertia Matrix
+  std::vector<double> J_0_param;
+  if(!priv_nh.getParam("J_0", J_0_param)) ROS_WARN("Nodelet Control CCTV could not load J_0_");
+  for(int i=0; i<3; i++){
+     J_0_(i,i) = J_0_param[i];
+  }
+  ROS_INFO_STREAM("J_0_ is: " << J_0_);
+
   // Set cctv controller params
   cctv_controller_.set_m_0(payload_mass_);
   cctv_controller_.set_J_0(Eigen::Matrix3d::Identity());

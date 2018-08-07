@@ -39,17 +39,28 @@ void ControlCCTV::set_l_i    (const double l_i){
 void ControlCCTV::set_rho    (const Matrix<double, 3, 3> rho){
   rho_ = rho;
 
-  // add attachments to control matrix P
-  for(int i = 0; i < n_bots_; i++){
-    P_.block<3,3>(0, 3*i) = Matrix3d::Identity();
-    P_.block<3,3>(3, 3*i) = VIOUtil::getSkew(rho_.block<3,1>(0,i));
-  }
+//  // add attachments to control matrix P
+//  for(int i = 0; i < n_bots_; i++){
+//    P_.block<3,3>(0, 3*i) = Matrix3d::Identity();
+//    P_.block<3,3>(3, 3*i) = VIOUtil::getSkew(rho_.block<3,1>(0,i));
+//  }
 
-  // P must have full rank for the payload to be controllable
-  typedef Matrix<double, 6, 9> Matrixd6x9;
-  FullPivLU<Matrixd6x9> lu(P_);
-  ROS_ERROR_COND(lu.rank() < P_.rows(), "P is not full rank");
-  P_inv_ = P_.transpose() * (P_*P_.transpose()).inverse();
+//  // P must have full rank for the payload to be controllable
+//  typedef Matrix<double, 6, 9> Matrixd6x9;
+//  FullPivLU<Matrixd6x9> lu(P_);
+//  ROS_ERROR_COND(lu.rank() < P_.rows(), "P is not full rank");
+//  P_inv_ = P_.transpose() * (P_*P_.transpose()).inverse();
+
+  //------------------//
+  // 2 ROBOT OVERRIDE //
+  //------------------//
+  P_inv_ << 0.5,    0,    0,   0,    0,    0,
+              0,  0.5,    0,   0,    0,  1.5,
+              0,    0,  0.5,   0, -1.5,    0,
+            0.5,    0,    0,   0,    0,    0,
+              0,  0.5,    0,   0,    0, -1.5,
+              0,    0,  0.5,   0,  1.5,    0;
+
 }
 void ControlCCTV::set_g      (const double g){
   g_ = g;
@@ -152,34 +163,34 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
         + (g_ * Vector3d::UnitZ())    // Gravity Compensation
         );
 
-//  const Vector3d M_0_des_ =
-//        (-1.0 * k_R_0.cwiseProduct(* e_R_0))
-//      + (-1.0 * k_Omega_0.cwiseProduct(e_Omega_0))
-//      + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
-//      * (J_0_ * R_0_.transpose() * des_R_0 * des_Omega_0)
-//      + (J_0_ * R_0_.transpose() * des_R_0 * des_alpha_0);
+  const Vector3d M_0_des_ =
+        (-1.0 * k_R_0.cwiseProduct(e_R_0))
+      + (-1.0 * k_Omega_0.cwiseProduct(e_Omega_0))
+      + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
+      * (J_0_ * R_0_.transpose() * des_R_0 * des_Omega_0)
+      + (J_0_ * R_0_.transpose() * des_R_0 * des_alpha_0);
 
-//  // Calculate desired virtual controls (eq. 23)
-//  MatrixXd diagonal_R_0;                      // Matrix with R_0 on the diagonals
-//  diagonal_R_0.resize(3*n_bots_, 3*n_bots_);
-//  diagonal_R_0.setZero();
-//  for (int i = 0; i < n_bots_; i++){
-//    diagonal_R_0.block<3,3>(3*i, 3*i) = R_0_;
-//  }
-//  Matrix<double, 6, 1> control_0_des;         // Payload control wrench
-//  control_0_des.block<3,1>(0,0) = R_0_.transpose() * F_0_des;
-//  control_0_des.block<3,1>(3,0) = M_0_des_;
-//  const Matrix<double, 9,1> mu_des = diagonal_R_0 * P_inv_ * control_0_des;
+  // Calculate desired virtual controls (eq. 23)
+  MatrixXd diagonal_R_0;                      // Matrix with R_0 on the diagonals
+  diagonal_R_0.resize(3*n_bots_, 3*n_bots_);
+  diagonal_R_0.setZero();
+  for (int i = 0; i < n_bots_; i++){
+    diagonal_R_0.block<3,3>(3*i, 3*i) = R_0_;
+  }
+  Matrix<double, 6, 1> control_0_des;         // Payload control wrench
+  control_0_des.block<3,1>(0,0) = R_0_.transpose() * F_0_des;
+  control_0_des.block<3,1>(3,0) = M_0_des_;
+  const Matrix<double, 9,1> mu_des = diagonal_R_0 * P_inv_ * control_0_des;
 
-//  // Extract my virtual control input
-//  Vector3d mu_i_des = mu_des.block<3,1>(3*idx_, 0);   // Ideal cable force
-//  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des; // Ideal cable force projected onto cable direction
+  // Extract my virtual control input
+  Vector3d mu_i_des = mu_des.block<3,1>(3*idx_, 0);   // Ideal cable force
+  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des; // Ideal cable force projected onto cable direction
 
-  //=====================================//
-  // Single UAV Payload Control Override //
-  Vector3d mu_i_des = F_0_des;
-  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des;
-  //=====================================//
+//  //=====================================//
+//  // Single UAV Payload Control Override //
+//  Vector3d mu_i_des = F_0_des;
+//  Vector3d mu_i = q_i_ * q_i_.transpose() * mu_i_des;
+//  //=====================================//
 
 
   // Calculate Attachment point acceleration (eq. 16)
@@ -245,7 +256,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   // prp component of control <eq 27>
   u_i_prp = (m_i_ * l_i_ * q_i_hat) * (
           (-1.0 * kp_q * e_q_i)             // P control
-        + (-1.0 * kd_q  * e_w_i)             // D control
+        + (-1.0 * kd_q * e_w_i)             // D control
         + (-1.0 * ki_q * e_q_int)
 //        - (q_i_.dot(w_i_des) * q_i_dot_)  // TODO: q_i_dot is fishy
 //        - (q_i_hat_2 *w_i_des_dot)      // sketchy double derivative

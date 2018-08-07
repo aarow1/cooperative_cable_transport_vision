@@ -12,6 +12,12 @@ ros::Publisher pl_viz_pub;
 // Function prototypes
 void pub_marker_viz(nav_msgs::Odometry pl_msg);
 
+// Fixed Setpoint
+Eigen::Vector3d set_pos;
+
+// Update frequency
+int update_freq = 100;
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "talker");
@@ -20,7 +26,7 @@ int main(int argc, char **argv)
   pl_odom_pub = n.advertise<nav_msgs::Odometry>("pl_pose", 1000);
   pl_viz_pub  = n.advertise<visualization_msgs::Marker>("pl_viz", 1000);
 
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(update_freq);
 
   int count = 0;
   while (ros::ok())

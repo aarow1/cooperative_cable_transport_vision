@@ -2,7 +2,6 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <Eigen/Geometry>
-#include <msgs_cctv/PayloadTrajCommand.h>
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/String.h>

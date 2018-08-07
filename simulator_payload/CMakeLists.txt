@@ -40,6 +40,6 @@ catkin_package(
 # add_dependencies(simple_publisher ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(simple_publisher ${catkin_LIBRARIES} ${EIGEN_LIBS})
 
-  add_executable(simple_payload_trajectory src/simple_payload_trajectory.cpp)
- add_dependencies(simple_payload_trajectory ${catkin_EXPORTED_TARGETS})
- target_link_libraries(simple_payload_trajectory ${catkin_LIBRARIES} ${EIGEN_LIBS})
+  add_executable(payload_simulator src/payload_simulator.cpp)
+ add_dependencies(payload_simulator ${catkin_EXPORTED_TARGETS})
+ target_link_libraries(payload_simulator ${catkin_LIBRARIES} ${EIGEN_LIBS})

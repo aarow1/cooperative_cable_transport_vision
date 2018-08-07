@@ -119,7 +119,8 @@ private:
   Vector3d q_i_;              // my cable direction, unit vector, world frame
   Vector3d q_i_dot_;          // cable direction derivative. TODO: this is fishy...
   Vector3d w_i_;              // my cable angular velocity, world?? frame
-  Matrix<double, 6, 9> P_;    // Control matrix, CONSTANT
+  Matrix<double, 5, 6> P_;    // Control matrix, CONSTANT, after 2 robot override
+  Matrix<double, 6, 9> P_full_;    // Full Control matrix
   Matrix<double, 9, 6> P_inv_;// Psuedo Inverse of P
 
   // Outputs of the controller
