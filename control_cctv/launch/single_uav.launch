@@ -9,7 +9,7 @@
   <arg name="sim" default="0"/>
   <arg name="quad_odom_topic" value="/vicon/$(arg robot_name)/odom"/> -->
   <!-- <arg name="quad_odom_topic" value="/$(arg robot_name)/quadrotor_ukf/control_odom"/>-->
-  <arg name="pl_odom_topic" value="/vicon/pl11/odom"/>
+  <arg name="pl_odom_topic" value="/vicon/cctv_bar/odom"/>
 
     <group ns="$(arg robot_name)">
 

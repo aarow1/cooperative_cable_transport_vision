@@ -1,7 +1,7 @@
 <launch>
   <arg name="quad_name" default="dragonfly11"/>
   <arg name="quad_odom_topic" value="/vicon/$(arg quad_name)/odom"/>
-  <arg name="payload_odom_topic" value="/vicon/pl11/odom"/>
+  <arg name="payload_odom_topic" value="/vicon/cctv_bar/odom"/>
   <arg name="nodelet_manager_name" default="nodelet_manager_control"/>
   <arg name="rviz" default="1"/>
 
@@ -24,7 +24,7 @@
       <param name="publish_tf" value="true"/>
       <param name="fixed_frame_id" value="mocap"/>
       <rosparam param="model_list">
-        ["dragonfly11", "pl11"]
+        ["dragonfly11", "cctv_bar"]
       </rosparam>
     </node>
 
