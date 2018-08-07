@@ -1,6 +1,6 @@
 <launch>
 
-<arg name="quad_name" default="dragonfly11"/>
+<arg name="quad_name" default="$(env USER)"/>
 <arg name="mass" default="0.250"/>
 <arg name="start_nodelet_manager" default="1"/>
 <arg name="nodelet_manager_name" default="nodelet_manager_control"/>
@@ -28,7 +28,6 @@
 
     <node pkg="simulator_payload" type="payload_simulator" name="pl_sim" />
 
-  />
 
     <!--nodelet manager
       -->
@@ -47,10 +46,11 @@
       name="control_cctv"
       required="true"
       output="screen">
-      <rosparam file="$(find control_cctv)/config/1robot_payload_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/two_robots_bar_params.yaml"/>
       <rosparam file="$(find control_cctv)/config/cctv_gains_dragonfly.yaml"/>
       <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
       <param name="mass" value="$(arg mass)"/>
+      <param name="my_name" value="$(arg quad_name)"/>
       <remap from="~quad_odom" to="odom"/>
       <remap from="~payload_odom" to="pl_pose"/>
       <remap from="~position_cmd" to="position_cmd"/>
@@ -119,7 +119,7 @@
       <remap from="~M_0_des_topic"  to="control_cctv/M_0_des"/>
       <remap from="~q_i_des_topic"  to="control_cctv/q_i_des"/>
       <param name="fixed_frame_id" value="simulator"/>
-      <rosparam file="$(find control_cctv)/config/1robot_payload_params.yaml"/>
+      <rosparam file="$(find control_cctv)/config/two_robots_bar_params.yaml"/>
       <rosparam file="$(find control_cctv)/config/cctv_gains_dragonfly.yaml"/>
       <rosparam file="$(find control_cctv)/config/so3_gains_dragonfly.yaml"/>
     </node>

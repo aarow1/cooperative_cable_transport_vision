@@ -1,0 +1,14 @@
+number_of_robots: 2
+
+quad_names: ['dragonfly11', 'aarow']
+mass: 0.250 # redundant of robot_mass
+robot_mass: 0.250
+payload_mass: 0.037
+cable_length: 0.55
+
+attachment:
+  rho_0: {x: 0.333, y: 0.000, z: 0.000}
+  rho_1: {x: -0.333, y: 0.000, z: 0.000}
+
+#Diagonal Elements of J_0
+J_0: [0.005, 0.005, 0.0]
