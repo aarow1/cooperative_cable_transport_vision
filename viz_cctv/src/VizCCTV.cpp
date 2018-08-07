@@ -92,10 +92,7 @@ int main(int argc, char **argv)
   if(!n.getParam("cable_length", cable_length))
     ROS_WARN("viz cctv couldn't load cable_length");
   if(!n.getParam("fixed_frame_id", fixed_frame_id))
-    ROS_WARN("viz cctv couldn't load ffi");
-
-  ROS_INFO("cctv cl %2.2f", cable_length);
-  ROS_INFO("cctv cl %s", fixed_frame_id.c_str());
+    ROS_WARN("viz cctv couldn't load fixed frame id");
 
   ros::spin();
   return 0;

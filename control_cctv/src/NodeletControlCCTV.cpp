@@ -590,10 +590,22 @@ void NodeletControlCCTV::onInit()
   so3_controller_.setMaxTiltAngle(max_tilt_angle);
 
   // Get payload params
-  priv_nh.param("payload_mass", payload_mass_, 1.0);
+  priv_nh.param("payload_mass", payload_mass_, 0.1);
   priv_nh.param("cable_length", cable_length_, 0.33);
-  priv_nh.param("number_of_robots", n_bots_, 5);
-  priv_nh.param("my_index", idx_, 0);
+  priv_nh.param("number_of_robots", n_bots_, 3);
+
+  std::string my_name;
+  priv_nh.param("my_name", my_name, std::string("penis"));
+
+  std::vector<std::string> robot_names;
+  if(!priv_nh.getParam("quad_names", robot_names)) ROS_ERROR("Control CCTV Params: Could not load robot_names");
+
+  idx_ = 0;
+  for(unsigned int i=0; i<robot_names.size(); i++){
+    if(!my_name.compare(robot_names[i])) idx_ = i;
+  }
+  ROS_INFO("Control CCTV Params (my_name): %s", my_name.c_str());
+  ROS_INFO("Control CCTV Params (idx_): %i", idx_);
 
   // Get Payload gains
   priv_nh.param("kp_pos_0/x", kp_pos_0_(0),      0.0);
@@ -629,24 +641,22 @@ void NodeletControlCCTV::onInit()
 
   // Retrieve attachment point params for all robots
   for (int i=0; i<n_bots_; i++){
-    ROS_INFO("loading rho %i", i);
     std::string param_name = "attachment/rho_" + std::to_string(i);
     if(!priv_nh.getParam(param_name + "/x", rho_(0, i)))
-      ROS_ERROR("Couldn't find param: %s/x", param_name.c_str());
+      ROS_ERROR("Control CCTV Params: Could not find param %s/x", param_name.c_str());
     if(!priv_nh.getParam(param_name + "/y", rho_(1, i)))
-      ROS_ERROR("Couldn't find param: %s/y", param_name.c_str());
+      ROS_ERROR("Control CCTV Params: Could not find param %s/y", param_name.c_str());
     if(!priv_nh.getParam(param_name + "/z", rho_(2, i)))
-      ROS_ERROR("Couldn't find param: %s/z", param_name.c_str());
+      ROS_ERROR("Control CCTV Params: Could not find param %s/z", param_name.c_str());
   }
   rho_i_ = rho_.block<3,1>(0, idx_);
 
   // Load Payload Inertia Matrix
   std::vector<double> J_0_param;
-  if(!priv_nh.getParam("J_0", J_0_param)) ROS_WARN("Nodelet Control CCTV could not load J_0_");
+  if(!priv_nh.getParam("J_0", J_0_param)) ROS_WARN("Control CCTV Params: Could not load J_0_");
   for(int i=0; i<3; i++){
      J_0_(i,i) = J_0_param[i];
   }
-  ROS_INFO_STREAM("J_0_ is: " << J_0_);
 
   // Set cctv controller params
   cctv_controller_.set_m_0(payload_mass_);
