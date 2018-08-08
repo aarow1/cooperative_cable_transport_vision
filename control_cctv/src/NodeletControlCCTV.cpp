@@ -285,11 +285,11 @@ void NodeletControlCCTV::payload_odom_callback(const nav_msgs::Odometry::ConstPt
   pos_0_(0)  = pl_odom->pose.pose.position.x;
   pos_0_(1)  = pl_odom->pose.pose.position.y;
   pos_0_(2)  = pl_odom->pose.pose.position.z;
-  //R_0_.x() = pl_odom->pose.pose.orientation.x;
-  //R_0_.y() = pl_odom->pose.pose.orientation.y;
-  //R_0_.z() = pl_odom->pose.pose.orientation.z;
-  //R_0_.w() = pl_odom->pose.pose.orientation.w;
-  R_0_.setIdentity();
+  R_0_.x() = pl_odom->pose.pose.orientation.x;
+  R_0_.y() = pl_odom->pose.pose.orientation.y;
+  R_0_.z() = pl_odom->pose.pose.orientation.z;
+  R_0_.w() = pl_odom->pose.pose.orientation.w;
+  // R_0_.setIdentity();
   Omega_0_(0)  = pl_odom->twist.twist.angular.x;
   Omega_0_(1)  = pl_odom->twist.twist.angular.y;
   Omega_0_(2)  = pl_odom->twist.twist.angular.z;
