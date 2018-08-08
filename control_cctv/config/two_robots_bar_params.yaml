@@ -3,7 +3,7 @@ number_of_robots: 2
 quad_names: ['dragonfly11', 'aarow']
 mass: 0.250 # redundant of robot_mass
 robot_mass: 0.250
-payload_mass: 0.037
+payload_mass: 0.127
 cable_length: 0.55
 
 attachment:
