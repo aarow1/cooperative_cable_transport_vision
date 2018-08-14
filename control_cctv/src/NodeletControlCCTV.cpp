@@ -357,6 +357,11 @@ void NodeletControlCCTV::quad_odom_callback(const nav_msgs::Odometry::ConstPtr &
 //------------------------------------------------------------------------------------------------
 void NodeletControlCCTV::estimate_cable_state(void){
 
+  static ros::Time t_last = ros::Time(0);
+  ros::Time t_now = ros::Time::now();
+  double dt = (t_now - t_last).toSec();
+  t_last = t_now;
+
   // Note: p = location, v = velocity, p_b_0 = position, of(sub) b, in-frame(super) 0
 
   // 1. calculate q_i
@@ -371,36 +376,25 @@ void NodeletControlCCTV::estimate_cable_state(void){
   }
   double alpha_q_i      = dt / (tau_q_i + dt);
   q_i_      = q_i_      + alpha_q_i     * (q_i_raw      - q_i_);
+  q_i_.normalize();
 
   // 2. calculate q_i_dot
   const Eigen::Vector3d v_attach_0 = vel_0_ + Omega_0_.cross(rho_i_);
   const Eigen::Vector3d v_attach_quad = v_attach_0 - quad_vel_;
   q_i_dot_raw = v_attach_quad / cable_length_;
+  double alpha_q_i_dot  = dt / (tau_q_i_dot + dt);
+  q_i_dot_  = q_i_dot_  + alpha_q_i_dot * (q_i_dot_raw  - q_i_dot_);
 
   // 3. calculate w_i (yikes)
   w_i_raw = (q_i_.cross(v_attach_quad)) / (cable_length_);
   double alpha_w_i      = dt / (tau_w_i + dt);
   w_i_      = w_i_      + alpha_w_i     * (w_i_raw      - w_i_);
 
-  // Low pass filter all three
-  static ros::Time t_last = ros::Time(0);
-  ros::Time t_now = ros::Time::now();
-  double dt = (t_now - t_last).toSec();
-  t_last = t_now;
-
-  double alpha_q_i_dot  = dt / (tau_q_i_dot + dt);
-
-  // ROS_WARN("alpha_q_i is: %2.4f", alpha_q_i);
-
-  q_i_dot_  = q_i_dot_  + alpha_q_i_dot * (q_i_dot_raw  - q_i_dot_);
-  q_i_.normalize();
-
   for (int i =0; i<3; i++){
     if(std::isnan(q_i_(i)))     q_i_      = -Eigen::Vector3d::UnitZ();
     if(std::isnan(q_i_dot_(i))) q_i_dot_  = Eigen::Vector3d::Zero();
     if(std::isnan(w_i_(i)))     w_i_      = Eigen::Vector3d::Zero();
   }
-
 
   cctv_controller_.set_q_i(q_i_);
   cctv_controller_.set_q_i_dot(q_i_dot_);
