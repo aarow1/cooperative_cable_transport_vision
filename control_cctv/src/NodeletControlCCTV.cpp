@@ -369,9 +369,8 @@ void NodeletControlCCTV::estimate_cable_state(void){
   } else {
     q_i_raw = q_i_;
   }
-//  ROS_INFO_THROTTLE(.5, "pos_0_: [%2.2f %2.2f %2.2f]", pos_0_(0), pos_0_(0), pos_0_(0));
-//  ROS_INFO_THROTTLE(.5, "quad_pos_: [%2.2f %2.2f %2.2f]", quad_pos_(0), quad_pos_(0), quad_pos_(0));
-//  ROS_INFO_THROTTLE(.5, "q_i_: [%2.2f %2.2f %2.2f]", q_i_(0), q_i_(0), q_i_(0));
+  double alpha_q_i      = dt / (tau_q_i + dt);
+  q_i_      = q_i_      + alpha_q_i     * (q_i_raw      - q_i_);
 
   // 2. calculate q_i_dot
   const Eigen::Vector3d v_attach_0 = vel_0_ + Omega_0_.cross(rho_i_);
@@ -379,8 +378,9 @@ void NodeletControlCCTV::estimate_cable_state(void){
   q_i_dot_raw = v_attach_quad / cable_length_;
 
   // 3. calculate w_i (yikes)
-  w_i_raw = (p_attach_quad.cross(v_attach_quad)) / (cable_length_ * cable_length_);
-
+  w_i_raw = (q_i_.cross(v_attach_quad)) / (cable_length_);
+  double alpha_w_i      = dt / (tau_w_i + dt);
+  w_i_      = w_i_      + alpha_w_i     * (w_i_raw      - w_i_);
 
   // Low pass filter all three
   static ros::Time t_last = ros::Time(0);
@@ -388,15 +388,11 @@ void NodeletControlCCTV::estimate_cable_state(void){
   double dt = (t_now - t_last).toSec();
   t_last = t_now;
 
-  double alpha_q_i      = dt / (tau_q_i + dt);
   double alpha_q_i_dot  = dt / (tau_q_i_dot + dt);
-  double alpha_w_i      = dt / (tau_w_i + dt);
 
   // ROS_WARN("alpha_q_i is: %2.4f", alpha_q_i);
 
-  q_i_      = q_i_      + alpha_q_i     * (q_i_raw      - q_i_);
   q_i_dot_  = q_i_dot_  + alpha_q_i_dot * (q_i_dot_raw  - q_i_dot_);
-  w_i_      = w_i_      + alpha_w_i     * (w_i_raw      - w_i_);
   q_i_.normalize();
 
   for (int i =0; i<3; i++){
