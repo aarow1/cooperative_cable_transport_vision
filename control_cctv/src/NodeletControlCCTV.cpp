@@ -108,6 +108,8 @@ class NodeletControlCCTV : public nodelet::Nodelet
 
   Eigen::Vector3d k_R_0_;
   Eigen::Vector3d k_Omega_0_;
+  Eigen::Vector3d ki_R_0_;
+  double max_R_0_int;
 
   double kp_q_, kd_q_;
   double ki_q_, max_e_q_int;
@@ -215,6 +217,7 @@ void NodeletControlCCTV::publishSO3Command()
                                ki_pos_0_,
                                kd_pos_0_,
                                k_R_0_,
+                               ki_R_0_,
                                k_Omega_0_,
                                kp_q_,
                                kd_q_,
@@ -237,6 +240,7 @@ void NodeletControlCCTV::publishSO3Command()
                                ki_pos_0_,
                                kd_pos_0_,
                                k_R_0_,
+                               ki_R_0_,
                                k_Omega_0_,
                                kp_q_,
                                kd_q_,
@@ -614,6 +618,11 @@ void NodeletControlCCTV::onInit()
   priv_nh.param("k_R_0/x", k_R_0_(0),         0.0);
   priv_nh.param("k_R_0/y", k_R_0_(1),         0.0);
   priv_nh.param("k_R_0/z", k_R_0_(2),         0.0);
+
+  priv_nh.param("ki_R_0/x", ki_R_0_(0),    0.0);
+  priv_nh.param("ki_R_0/y", ki_R_0_(1),    0.0);
+  priv_nh.param("ki_R_0/z", ki_R_0_(2),    0.0);
+  priv_nh.param("max_R_0_int", max_R_0_int,      0.0);
 
   priv_nh.param("k_Omega_0/x", k_Omega_0_(0), 0.0);
   priv_nh.param("k_Omega_0/y", k_Omega_0_(1), 0.0);

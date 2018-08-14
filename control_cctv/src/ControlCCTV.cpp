@@ -23,6 +23,7 @@ void ControlCCTV::set_m_0    (const double m_0){
 void ControlCCTV::resetIntegrals(){
   pos_0_int.setZero();
   e_q_int.setZero();
+  R_0_int.setZero();
 }
 void ControlCCTV::set_J_0    (const Matrix3d J_0){
   J_0_ = J_0;
@@ -118,6 +119,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
                       const Vector3d &ki_pos_0,
                       const Vector3d &kd_pos_0,
                       const Vector3d &k_R_0,
+                      const Vector3d &ki_R_0,
                       const Vector3d &k_Omega_0,
                       const double &kp_q,
                       const double &kd_q,
@@ -136,7 +138,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   e_pos_0     = pos_0_ - des_pos_0;
   e_vel_0     = vel_0_ - des_vel_0;
   e_R_0       = -0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
-  e_Omega_0   = - Omega_0_ + (R_0_.transpose() * des_R_0 * des_Omega_0);
+  e_Omega_0   = Omega_0_ - (R_0_.transpose() * des_R_0 * des_Omega_0);
 
   // Calculate pos_0 integral
   for (int i=0; i<3; i++){
@@ -154,6 +156,21 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
     }
   }
 
+  // Calculate R_0 integral
+  for (int i=0; i<3; i++){
+    if(k_R_0(i) != 0){
+      R_0_int(i) += ki_R_0(i)*e_R_0(i) * dt;
+    }
+    if(R_0_int(i) > max_R_0_int){
+      R_0_int(i) = max_R_0_int;
+      ROS_WARN_THROTTLE(0.5, "R: int %i is saturated at %2.2f", i, R_0_int(i));
+    }
+    else if(R_0_int(i) < -max_R_0_int){
+      R_0_int(i) = -max_R_0_int;
+      ROS_WARN_THROTTLE(0.5, "R int %i is saturated at %2.2f", i, R_0_int(i));
+    }
+  }
+
   // Payload force and moment (eq. 20, 21)
   F_0_des = m_0_ * (
           (-1.0 * kp_pos_0.cwiseProduct(e_pos_0))  // P control
@@ -165,10 +182,11 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   M_0_des =
         (-1.0 * k_R_0.cwiseProduct(e_R_0))
-      + (-1.0 * k_Omega_0.cwiseProduct(e_Omega_0))
-      + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
-      * (J_0_ * R_0_.transpose() * des_R_0 * des_Omega_0)
-      + (J_0_ * R_0_.transpose() * des_R_0 * des_alpha_0);
+      + (-1.0 * ki_R_0.cwiseProduct(R_0_int))
+      + (-1.0 * k_Omega_0.cwiseProduct(e_Omega_0));
+//      + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
+//      * (J_0_ * R_0_.transpose() * des_R_0 * des_Omega_0)
+//      + (J_0_ * R_0_.transpose() * des_R_0 * des_alpha_0);
 
   // Calculate desired virtual controls (eq. 23)
   MatrixXd diagonal_R_0;                      // Matrix with R_0 on the diagonals

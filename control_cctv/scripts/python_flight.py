@@ -44,14 +44,14 @@ flow = [
     ("1 go to " + str(pos1),      goto_client1,    pos1),
     ("2 go to " + str(pos2),      goto_client2,    pos2),
 
+    ("1 set cctv hover",          pltm_transition_client1,    'pl_trackers/PLHoverTracker'),
     ("2 set cctv hover",          pltm_transition_client2,    'pl_trackers/PLHoverTracker'),
-#    ("1 set cctv hover",          pltm_transition_client1,    'pl_trackers/PLHoverTracker'),
 
+    ("1 switch to cctv control",  use_cctv_control_client1, 1),
     ("2 switch to cctv control",  use_cctv_control_client2, 1),
-#    ("1 switch to cctv control",  use_cctv_control_client1, 1),
 
+    ("1 switch to so3 control",   use_cctv_control_client1, 0),
     ("2 switch to so3 control",   use_cctv_control_client2, 0),
-#    ("1 switch to so3 control",   use_cctv_control_client1, 0),
 
     ("1 go to " + str(land1),     goto_client1,    land1),
     ("2 go to " + str(land2),     goto_client2,    land2),
