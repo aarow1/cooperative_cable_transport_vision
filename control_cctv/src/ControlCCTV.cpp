@@ -135,8 +135,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   // Calculate Payload errors
   e_pos_0     = pos_0_ - des_pos_0;
   e_vel_0     = vel_0_ - des_vel_0;
-  e_R_0       = 0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
-  e_Omega_0   = Omega_0_ - (R_0_.transpose() * des_R_0 * des_Omega_0);
+  e_R_0       = -0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
+  e_Omega_0   = - Omega_0_ + (R_0_.transpose() * des_R_0 * des_Omega_0);
 
   // Calculate pos_0 integral
   for (int i=0; i<3; i++){
@@ -163,7 +163,7 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
         + (g_ * Vector3d::UnitZ())    // Gravity Compensation
         );
 
-  const Vector3d M_0_des_ =
+  M_0_des =
         (-1.0 * k_R_0.cwiseProduct(e_R_0))
       + (-1.0 * k_Omega_0.cwiseProduct(e_Omega_0))
       + VIOUtil::getSkew(R_0_.transpose() * des_R_0 * des_Omega_0 )
@@ -179,8 +179,8 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   }
   Matrix<double, 6, 1> control_0_des;         // Payload control wrench
   control_0_des.block<3,1>(0,0) = R_0_.transpose() * F_0_des;
-  control_0_des.block<3,1>(3,0) = M_0_des_;
-  const Matrix<double, 9,1> mu_des = diagonal_R_0 * P_inv_ * control_0_des;
+  control_0_des.block<3,1>(3,0) = M_0_des;
+  const Matrix<double,6,1> mu_des = diagonal_R_0 * P_inv_ * control_0_des;
 
   // Extract my virtual control input
   Vector3d mu_i_des = mu_des.block<3,1>(3*idx_, 0);   // Ideal cable force
