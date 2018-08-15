@@ -137,6 +137,15 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
   // Calculate Payload errors
   e_pos_0     = pos_0_ - des_pos_0;
   e_vel_0     = vel_0_ - des_vel_0;
+
+  // 2 Robot Override //////////////////////////////////////////////////////////////////////////////
+  Eigen::Vector3d eul_0 = R_0_.eulerAngles(2,0,1); // Retrieve ZYX Euler Angles from R_0
+  R_0_ = ((Eigen::AngleAxisd(eul_0(0), Eigen::Vector3d::UnitZ())) *
+          (Eigen::AngleAxisd(eul_0(1), Eigen::Vector3d::UnitY())) *
+          (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()))).toRotationMatrix(); // Rebuild rotation without the roll
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
   e_R_0       = -0.5 * VIOUtil::vee((des_R_0.transpose() * R_0_) - (R_0_.transpose() * des_R_0));
   e_Omega_0   = Omega_0_ - (R_0_.transpose() * des_R_0 * des_Omega_0);
 
