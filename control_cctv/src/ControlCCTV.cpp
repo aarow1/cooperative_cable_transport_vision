@@ -140,9 +140,10 @@ void ControlCCTV::calculateControl(const Vector3d &des_pos_0,
 
   // 2 Robot Override //////////////////////////////////////////////////////////////////////////////
   Eigen::Vector3d eul_0 = R_0_.eulerAngles(2,1,0); // Retrieve ZYX Euler Angles from R_0
+  Eigen::Vector3d eul_d = des_R_0.eulerAngles(2,1,0); // Retrieve ZYX Euler Angles from R_0
   R_0_ = ((Eigen::AngleAxisd(eul_0(0), Eigen::Vector3d::UnitZ())) *
           (Eigen::AngleAxisd(eul_0(1), Eigen::Vector3d::UnitY())) *
-          (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()))).toRotationMatrix(); // Rebuild rotation without the roll
+          (Eigen::AngleAxisd(eul_d(2), Eigen::Vector3d::UnitX()))).toRotationMatrix(); // Rebuild rotation without the roll
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
